@@ -634,5 +634,6 @@ as kubeadmin
 with the password you got from install_dir/auth/kubeadmin-password.
 ----
 
-
+----
 image:images/ocp43_upi.png [title="OCP 4.3 dashboard"] 
+----
