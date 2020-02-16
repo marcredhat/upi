@@ -91,22 +91,28 @@ DNS_DIR="/etc/NetworkManager/dnsmasq.d"
 
 ----
 The first entry in /etc/resolv.conf should be "nameserver 127.0.0.1".
-Make sure that any entry in /etc/hosts is forward and reverse resolvable by libvirt/kvm. You can test this by adding a test record in /etc/hosts:
+
+Make sure that any entry in /etc/hosts is forward and reverse resolvable by libvirt/kvm. 
+
+You can test this by adding a test record in /etc/hosts:
    echo "1.2.3.4 test.local" >> /etc/hosts
+
 and then restart libvirtd so it picks up the hosts file:
    systemctl restart libvirtd
+
 and finally check if the forward and reverse lookup works:
    dig test.local @${HOST_IP}
    dig -x 1.2.3.4 @${HOST_IP}
-verify that you get answers in both the above dig queries.
-Make sure that any entry in the dnsmasq.d is also picked up by libvirt/kvm. You can test this by adding a test srv record:
+   
+Verify that you get answers in both the above dig queries.
+
+Make sure that any entry in the dnsmasq.d is also picked up by libvirt/kvm. 
+You can test this by adding a test srv record:
    echo "srv-host=test.local,yayyy.local,2380,0,10" > ${DNS_DIR}/temp-test.conf
-and then reload dnsmasq (if you are using separate dnsmasq service then restart dnsmasq, if its NetworkManager's dnsmasq then reload NetworkManager):
-   # If using separate dnsmasq service
-   systemctl restart dnsmasq
-   # If using NetworkManager's dnsmasq
-   systemctl reload NetworkManager
-and finally test that both libvirt and your host can resolve the srv record:
+
+systemctl reload NetworkManager
+
+test that both libvirt and your host can resolve the srv record:
    dig srv test.local
    dig srv test.local @${HOST_IP}
 verify that you get the srv answer (yayy.local) in both the above dig queries.
@@ -144,7 +150,8 @@ wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/
 
 Go to
 https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.1/x86_64/product-software
-and copy the download link of Red Hat Enterprise Linux KVM Guest Image (right-click on "Download Now" and copy link location)
+and copy the download link of Red Hat Enterprise Linux KVM Guest Image 
+(right-click on "Download Now" and copy link location)
 
 wget "https://access.cdn.redhat.com/content/.../rhel-8.1-x86_64-kvm.qcow2?user=...&_auth_=..." -O /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2
 
@@ -508,13 +515,15 @@ ping  -c 1 api-int.ocp43.local
 
 ----
 The DNS lookup for the API endpoints also needs to be in place.
-OpenShift 4 expects api.$CLUSTERDOMAIN and api-int.$CLUSTERDOMAIN to be configured, they can both be set to the same IP address – which will be the IP of the Load Balancer.
+OpenShift 4 expects api.$CLUSTERDOMAIN and api-int.$CLUSTERDOMAIN to be configured, 
+they can both be set to the same IP address – which will be the IP of the Load Balancer.
 ping  -c 1 api.ocp43.local
 ping  -c 1 api-int.ocp43.local
 ----
 
 ----
-A wildcard DNS entry needs to be in place for the OpenShift 4 ingress router, which is also a load balanced endpoint.
+A wildcard DNS entry needs to be in place for the OpenShift 4 ingress router, 
+which is also a load balanced endpoint.
 dig *.apps.ocp43.local +short
 192.168.122.205
 ----
@@ -624,3 +633,6 @@ You can now connect to https://console-openshift-console.apps.ocp43.local
 as kubeadmin
 with the password you got from install_dir/auth/kubeadmin-password.
 ----
+
+
+image:images/ocp43_upi.png [title="OCP 4.3 dashboard"] 
