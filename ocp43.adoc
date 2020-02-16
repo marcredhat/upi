@@ -4,7 +4,8 @@ OpenShift 4.3 User Provisioned Infrastructure (UPI) Installation on KVM/Libvirt
 Based on Khizer Naeem's instructions for OCP 4.2 at 
 https://kxr.me/2019/08/17/openshift-4-upi-install-libvirt-kvm/
 
-(updates include new HAProxy syntax, checks for DNS configuration, 4.3 download links, tmux instead of screen)
+(updates include new HAProxy syntax, checks for DNS configuration, 
+4.3 download links, tmux instead of screen)
 ----
 
 
