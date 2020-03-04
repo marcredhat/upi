@@ -775,4 +775,7 @@ NOTE: 192.168.122.73 is worker-2 (where the destination pod runs)
 Sources:
 https://developers.redhat.com/blog/2016/10/12/tracing-packets-inside-open-vswitch/
 http://docs.openvswitch.org/en/latest/topics/tracing/
+https://developers.redhat.com/blog/2019/02/27/sidecars-analyze-debug-network-traffic-kubernetes-pod/
+https://developers.redhat.com/blog/2019/08/22/troubleshooting-red-hat-openshift-applications-with-throwaway-containers/
+https://medium.com/@NTTICT/vxlan-explained-930cc825a51
 ----
