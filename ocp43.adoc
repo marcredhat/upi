@@ -641,3 +641,138 @@ with the password you got from install_dir/auth/kubeadmin-password.
 
 image:images/ocp43_upi.png[title="OCP 4.3 dashboard"] 
 
+
+== SDN packet flow
+
+
+----
+Let's deploy a DaemonSet so that we get a container running on each worker node.
+---- 
+
+
+----
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: tcpdump
+spec:
+  template:
+    metadata:
+      labels:
+        marc: tcpdump
+    spec:
+      nodeSelector:
+        marc: tcpdump-node
+      containers:
+        - name: tcpdump
+          image: corfr/tcpdump
+          command:
+          - bin/sleep
+          - infinity
+----
+
+
+----
+oc label node worker-1.ocp43.local marc=tcpdump-node
+oc label node worker-2.ocp43.local marc=tcpdump-node
+----
+
+----
+In my case, the IP address seen from inside each container are 10.128.2.17 and 10.129.0.17
+----
+
+----
+oc rsh tcpdump-9prsr
+/ # ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+3: eth0@if22: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1450 qdisc noqueue state UP
+    link/ether 0a:58:0a:81:00:11 brd ff:ff:ff:ff:ff:ff
+    inet 10.129.0.17/23 brd 10.129.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::c45d:ddff:febc:8a53/64 scope link
+       valid_lft forever preferred_lft forever
+       
+/ # ping 10.128.2.17
+PING 10.128.2.17 (10.128.2.17): 56 data bytes
+64 bytes from 10.128.2.17: seq=0 ttl=64 time=1.876 ms
+64 bytes from 10.128.2.17: seq=1 ttl=64 time=0.468 ms
+64 bytes from 10.128.2.17: seq=2 ttl=64 time=0.389 ms
+^C
+--- 10.128.2.17 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 0.389/0.911/1.876 ms
+----
+
+
+----
+In OpenShift we only have a switch (br0) although OpenvSwitch allows to have more.
+Each switch contains multiple ports. The vxlan0 is responsible for encapsulating packets.
+The tun0 is the node IP address on the overlay, the rest of ports are pods.
+----
+
+----
+ssh core@worker-1.ocp43.local
+[core@worker-1 ~]$ sudo  ovs-ofctl show -O OpenFlow13 br0  | grep tun0
+2(tun0): addr:8e:89:0a:37:b8:64
+----
+
+
+
+----
+[core@worker-1 ~]$ sudo ovs-appctl ofproto/trace br0 in_port=2,tcp,nw_src=10.129.0.17,nw_dst=10.128.2.17
+Flow: tcp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,nw_src=10.129.0.17,nw_dst=10.128.2.17,nw_tos=0,nw_ecn=0,nw_ttl=0,tp_src=0,tp_dst=0,tcp_flags=0
+
+bridge("br0")
+-------------
+ 0. ct_state=-trk,ip, priority 300
+    ct(table=0)
+    drop
+     -> A clone of the packet is forked to recirculate. The forked pipeline will be resumed at table 0.
+     -> Sets the packet to an untracked state, and clears all the conntrack fields.
+
+Final flow: unchanged
+Megaflow: recirc_id=0,ct_state=-trk,eth,ip,in_port=2,nw_src=10.129.0.16/28,nw_frag=no
+Datapath actions: ct,recirc(0x696a5)
+
+===============================================================================
+recirc(0x696a5) - resume conntrack with default ct_state=trk|new (use --ct-next to customize)
+===============================================================================
+
+Flow: recirc_id=0x696a5,ct_state=new|trk,eth,tcp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,nw_src=10.129.0.17,nw_dst=10.128.2.17,nw_tos=0,nw_ecn=0,nw_ttl=0,tp_src=0,tp_dst=0,tcp_flags=0
+
+bridge("br0")
+-------------
+    thaw
+        Resuming from table 0
+ 0. ip,in_port=2,nw_src=10.129.0.0/23,nw_dst=10.128.0.0/14, priority 300
+    goto_table:25
+25. ip,nw_src=10.129.0.17, priority 100
+    load:0->NXM_NX_REG0[]
+    goto_table:30
+30. ip,nw_dst=10.128.0.0/14, priority 100
+    goto_table:90
+90. ip,nw_dst=10.128.2.0/23, priority 100, cookie 0x57bbdba6
+    move:NXM_NX_REG0[]->NXM_NX_TUN_ID[0..31]
+     -> NXM_NX_TUN_ID[0..31] is now 0
+    set_field:192.168.122.73->tun_dst
+    output:1
+     -> output to kernel tunnel
+
+Final flow: recirc_id=0x696a5,ct_state=new|trk,eth,tcp,tun_src=0.0.0.0,tun_dst=192.168.122.73,tun_ipv6_src=::,tun_ipv6_dst=::,tun_gbp_id=0,tun_gbp_flags=0,tun_tos=0,tun_ttl=0,tun_erspan_ver=0,tun_flags=0,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,nw_src=10.129.0.17,nw_dst=10.128.2.17,nw_tos=0,nw_ecn=0,nw_ttl=0,tp_src=0,tp_dst=0,tcp_flags=0
+Megaflow: recirc_id=0x696a5,ct_state=-rpl+trk,eth,ip,tun_id=0/0xffffffff,tun_dst=0.0.0.0,in_port=2,nw_src=10.129.0.17,nw_dst=10.128.2.0/23,nw_ecn=0,nw_frag=no
+Datapath actions: set(tunnel(tun_id=0x0,dst=192.168.122.73,ttl=64,tp_dst=4789,flags(df|key))),2
+
+NOTE: 192.168.122.73 is worker-2 (where the destination pod runs)
+----
+
+
+----
+Sources:
+https://developers.redhat.com/blog/2016/10/12/tracing-packets-inside-open-vswitch/
+http://docs.openvswitch.org/en/latest/topics/tracing/
+----
