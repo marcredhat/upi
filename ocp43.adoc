@@ -205,6 +205,11 @@ EOF
 ----
 
 ----
+./openshift-install create ignition-configs --dir=./install_dir
+----
+
+
+----
 Start python3 webserver
 ----
 
