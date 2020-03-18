@@ -1,5 +1,17 @@
 
 ----
+for x in lb bootstrap master-1 master-2 master-3 worker-1 worker-2
+do
+  virsh destroy ${CLUSTER_NAME}-$x
+  
+donefor x in lb bootstrap master-1 master-2 master-3 worker-1 worker-2
+do
+  virsh undefine ${CLUSTER_NAME}-$x
+done
+----
+
+
+----
 cat virshnet.xml
 ----
 
