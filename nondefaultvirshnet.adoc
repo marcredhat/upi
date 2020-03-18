@@ -1,0 +1,47 @@
+
+----
+cat virshnet.xml
+----
+
+----
+<network connections='7'>
+  <name>marcnet</name>
+  <uuid>c89ee52f-4dc1-4abe-aeac-53afe0bbb8de</uuid>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='52:54:00:aa:45:e6'/>
+  <ip address='192.168.111.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.111.2' end='192.168.111.254'/>
+    </dhcp>
+  </ip>
+</network>
+----
+
+----
+virsh net-define virshnet.xml
+Network marcnet defined from virshnet.xml
+----
+
+
+----
+virsh net-start marcnet
+Network marcnet started
+----
+
+----
+virsh net-autostart marcnet
+Network marcnet marked as autostarted
+----
+
+
+----
+virsh net-list
+ Name                 State      Autostart     Persistent
+ default              active     yes           yes
+ marcnet              active     yes           yes
+----
