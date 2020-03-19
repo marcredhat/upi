@@ -22,7 +22,7 @@ cat <<EOF > marcnat.xml
   <ip address='192.168.111.1' netmask='255.255.255.0'>
     <dhcp>
       <range start='192.168.111.3' end='192.168.111.254'/>
-      <host name='dell-r730-001.dsal.lab.eng.bos.redhat.com' ip='192.168.122.1'/>
+      <host name='dell-r730-001...' ip='192.168.122.1'/>
     </dhcp>
   </ip>
 </network>
