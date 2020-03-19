@@ -319,6 +319,18 @@ virsh list --all
 ----
 
 ----
+Ensure that all machines received an IP and MAC:
+----
+
+----
+for x in lb bootstrap master-1 master-2 master-3 worker-1 worker-2
+do
+  virsh --connect qemu:///system reboot  "${CLUSTER_NAME}-$x"
+  echo `virsh domifaddr "${CLUSTER_NAME}-$x"`
+done
+----
+
+----
 IP=$(virsh domifaddr "${CLUSTER_NAME}-bootstrap" | grep ipv4 | head -n1 | awk '{print $4}' | cut -d'/' -f1)
 MAC=$(virsh domifaddr "${CLUSTER_NAME}-bootstrap" | grep ipv4 | head -n1 | awk '{print $2}')
 virsh net-update ${VIR_NET} add-last ip-dhcp-host --xml "<host mac='$MAC' ip='$IP'/>" --live --config
