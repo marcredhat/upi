@@ -13,48 +13,37 @@ done
 
 
 ----
-cat virshnet.xml
-----
 
-----
-<network connections='7'>
-  <name>marcnet</name>
-  <uuid>c89ee52f-4dc1-4abe-aeac-53afe0bbb8de</uuid>
-  <forward mode='nat'>
-    <nat>
-      <port start='1024' end='65535'/>
-    </nat>
-  </forward>
-  <bridge name='virbr1' stp='on' delay='0'/>
-  <mac address='52:54:00:aa:45:e6'/>
+cat <<EOF > marcnat.xml
+<network>
+  <name>marcnat</name>
+  <forward mode='nat' dev='eno1'/>
+  <bridge name='marcvirbr' stp='on' delay='2'/>
   <ip address='192.168.111.1' netmask='255.255.255.0'>
     <dhcp>
-      <range start='192.168.111.2' end='192.168.111.254'/>
+      <range start='192.168.111.3' end='192.168.111.254'/>
+      <host name='dell-r730-001.dsal.lab.eng.bos.redhat.com' ip='192.168.122.1'/>
     </dhcp>
   </ip>
 </network>
-----
-
-----
-virsh net-define virshnet.xml
-Network marcnet defined from virshnet.xml
-----
+EOF
 
 
-----
-virsh net-start marcnet
-Network marcnet started
-----
+virsh net-define marcnat.xml
+virsh net-start marcnat
+virsh net-autostart marcnat
 
-----
-virsh net-autostart marcnet
-Network marcnet marked as autostarted
-----
+# NAT state should be active, autostart, and persistent
+virsh net-list --all
 
 
-----
-virsh net-list
- Name                 State      Autostart     Persistent
- default              active     yes           yes
- marcnet              active     yes           yes
+
+cat /proc/sys/net/ipv4/ip_forward
+1
+As we can see in both the above examples this was disabled (as show by the value 0).
+
+Enable IP Forwarding on the fly
+As with any sysctl kernel parameters we can change the value of net.ipv4.ip_forward on the fly (without rebooting the system):
+
+sysctl -w net.ipv4.ip_forward=1
 ----
