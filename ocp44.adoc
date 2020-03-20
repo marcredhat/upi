@@ -132,8 +132,8 @@ PULL_SEC='<your pull secret from https://cloud.redhat.com/openshift/install/meta
 
 ----
 mkdir rhcos-install
-wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-kernel -O rhcos-install/vmlinuz
-wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img -O rhcos-install/initramfs.img
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.4/latest/rhcos-4.4.0-rc.1-x86_64-installer-kernel-x86_64 -O rhcos-install/vmlinuz
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.4/latest/rhcos-4.4.0-rc.1-x86_64-installer-initramfs.x86_64.img -O rhcos-install/initramfs.img
 ----
 
 ----
@@ -150,7 +150,7 @@ EOF
 ----
 
 ----
-wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-metal.raw.gz
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.4/latest/rhcos-4.4.0-rc.1-x86_64-metal.x86_64.raw.gz
 
 Go to
 https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.1/x86_64/product-software
@@ -164,11 +164,11 @@ RHNPASS='<your Red Hat Customer Portal password'
 ----
 
 ----
-wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-install-linux-4.3.0.tar.gz
-wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-client-linux-4.3.0.tar.gz
+wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.4.0-rc.2/openshift-install-linux-4.4.0-rc.2.tar.gz
+wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.4.0-rc.2/openshift-client-linux-4.4.0-rc.2.tar.gz
 
-tar xf openshift-client-linux-4.3.0.tar.gz
-tar xf openshift-install-linux-4.3.0.tar.gz
+tar xf openshift-client-linux-4.4.0-rc.2.tar.gz
+tar xf openshift-install-linux-4.4.0-rc.2.tar.gz
 rm -f README.md
 ----
 
