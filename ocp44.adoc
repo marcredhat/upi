@@ -588,6 +588,13 @@ dig _etcd-server-ssl._tcp.ocp44.local SRV +short
 ssh core@bootstrap.ocp44.local journalctl -b -f -u bootkube.service
 ----
 
+----
+You'll see journal entries like
+
+9_openshift-machineconfig_99-master-ssh.yaml": unable to get REST mapping for "99_openshift-machineconfig_99-master-ssh.yaml": no matches for kind "MachineConfig" in version "machineconfiguration.openshift.io/v1
+
+These messages go away as soon as CRD definition is  created (by machine-config operator).
+----
 
 ----
 ./openshift-install --dir=install_dir wait-for bootstrap-complete
