@@ -517,6 +517,11 @@ EOF
 ssh lb.${CLUSTER_NAME}.${BASE_DOM} dnf -y  install net-tools
 ----
 
+
+----
+ssh lb.${CLUSTER_NAME}.${BASE_DOM} systemctl status haproxy
+----
+
 ----
 ssh lb.${CLUSTER_NAME}.${BASE_DOM} netstat -nltupe | grep ':6443\|:22623\|:80\|:443'
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      0          32495      4113/haproxy
