@@ -553,14 +553,14 @@ ping  -c 1 api-int.ocp44.local
 The DNS lookup for the API endpoints also needs to be in place.
 OpenShift 4 expects api.$CLUSTERDOMAIN and api-int.$CLUSTERDOMAIN to be configured, 
 they can both be set to the same IP address – which will be the IP of the Load Balancer.
-ping  -c 1 api.ocp43.local
-ping  -c 1 api-int.ocp43.local
+ping  -c 1 api.ocp44.local
+ping  -c 1 api-int.ocp44.local
 ----
 
 ----
 A wildcard DNS entry needs to be in place for the OpenShift 4 ingress router, 
 which is also a load balanced endpoint.
-dig *.apps.ocp43.local +short
+dig *.apps.ocp44.local +short
 192.168.122.205
 ----
 
@@ -573,7 +573,7 @@ This needs to be in the form of _etcd-server-ssl._tcp.$CLUSTERDOMMAIN in your DN
 
 
 ----
-dig _etcd-server-ssl._tcp.ocp43.local SRV +short
+dig _etcd-server-ssl._tcp.ocp44.local SRV +short
 0 10 2380 etcd-1.ocp43.local.
 0 10 2380 etcd-0.ocp43.local.
 0 10 2380 etcd-2.ocp43.local.
@@ -585,7 +585,7 @@ dig _etcd-server-ssl._tcp.ocp43.local SRV +short
 ----
 
 ----
-ssh core@bootstrap.ocp43.local journalctl -b -f -u bootkube.service
+ssh core@bootstrap.ocp44.local journalctl -b -f -u bootkube.service
 ----
 
 
@@ -604,11 +604,11 @@ export KUBECONFIG=install_dir/auth/kubeconfig
 
 ----
 ./oc get nodes
-master-1.ocp43.local   Ready    master,worker   9m26s   v1.16.2
-master-2.ocp43.local   Ready    master,worker   9m20s   v1.16.2
-master-3.ocp43.local   Ready    master,worker   9m6s    v1.16.2
-worker-1.ocp43.local   Ready    worker          9m20s   v1.16.2
-worker-2.ocp43.local   Ready    worker          9m21s   v1.16.2
+master-1.ocp44.local   Ready    master,worker   9m26s   v1.16.2
+master-2.ocp44.local   Ready    master,worker   9m20s   v1.16.2
+master-3.ocp44.local   Ready    master,worker   9m6s    v1.16.2
+worker-1.ocp44.local   Ready    worker          9m20s   v1.16.2
+worker-2.ocp44.local   Ready    worker          9m21s   v1.16.2
 ----
 
 ----
