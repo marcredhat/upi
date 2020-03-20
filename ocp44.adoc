@@ -806,3 +806,13 @@ https://developers.redhat.com/blog/2019/02/27/sidecars-analyze-debug-network-tra
 https://developers.redhat.com/blog/2019/08/22/troubleshooting-red-hat-openshift-applications-with-throwaway-containers/
 https://medium.com/@NTTICT/vxlan-explained-930cc825a51
 ----
+
+----
+Gathering logs from failed installations:
+
+./openshift-install gather bootstrap --dir=./install_dir \ 
+    --bootstrap bootstrap.${CLUSTER_NAME}.${BASE_DOM} \ 
+    --master master-1.${CLUSTER_NAME}.${BASE_DOM} \ 
+    --master master-1.${CLUSTER_NAME}.${BASE_DOM} \ 
+    --master master-1.${CLUSTER_NAME}.${BASE_DOM}
+----
