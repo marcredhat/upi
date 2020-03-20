@@ -1,0 +1,798 @@
+
+----
+OpenShift 4.3 User Provisioned Infrastructure (UPI) Installation on KVM/Libvirt
+Based on Khizer Naeem's instructions for OCP 4.2 at 
+https://kxr.me/2019/08/17/openshift-4-upi-install-libvirt-kvm/
+
+(updates include new HAProxy syntax, checks for DNS configuration, 
+4.3 download links, tmux instead of screen)
+----
+
+
+----
+cat /etc/redhat-release
+Red Hat Enterprise Linux release 8.2 Beta (Ootpa)
+----
+
+
+----
+virsh version
+Compiled against library: libvirt 4.5.0
+Using library: libvirt 4.5.0
+Using API: QEMU 4.5.0
+Running hypervisor: QEMU 2.12.0
+----
+
+----
+virsh version --daemon
+Compiled against library: libvirt 4.5.0
+Using library: libvirt 4.5.0
+Using API: QEMU 4.5.0
+Running hypervisor: QEMU 2.12.0
+Running against daemon: 4.5.0
+----
+
+
+----
+subscription-manager register
+subscription-manager list --available
+subscription-manager attach --pool <pool>
+----
+
+
+----
+dnf -y update  && dnf -y upgrade
+dnf -y install libvirt*  bind-utils wget tar python3  virt-install virt-viewer libguestfs-tools-c tmux
+systemctl start libvirtd.service
+systemctl enable libvirtd
+----
+
+----
+echo -e "[main]\ndns=dnsmasq" > /etc/NetworkManager/conf.d/nm-dns.conf
+systemctl restart NetworkManager
+----
+
+----
+Check DHCP enabled
+----
+
+----
+virsh net-dumpxml default
+<network>
+  <name>default</name>
+  <uuid>cc1ad354-d794-441f-a434-4f8215ddce91</uuid>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:4c:22:83'/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254'/>
+    </dhcp>
+  </ip>
+</network>
+----
+
+
+----
+mkdir ocp4 && cd ocp4
+VIR_NET="default"
+HOST_NET=$(ip -4 a s $(virsh net-info $VIR_NET | awk '/Bridge:/{print $2}') | awk '/inet /{print $2}')
+HOST_IP=$(echo $HOST_NET | cut -d '/' -f1)
+[root@dell-r730-001 ocp4]# echo $HOST_NET
+192.168.122.1/24
+[root@dell-r730-001 ocp4]# echo $HOST_IP
+192.168.122.1
+----
+
+
+----
+DNS_DIR="/etc/NetworkManager/dnsmasq.d"
+----
+
+----
+The first entry in /etc/resolv.conf should be "nameserver 127.0.0.1".
+
+Make sure that any entry in /etc/hosts is forward and reverse resolvable by libvirt/kvm. 
+
+You can test this by adding a test record in /etc/hosts:
+   echo "1.2.3.4 test.local" >> /etc/hosts
+
+and then restart libvirtd so it picks up the hosts file:
+   systemctl restart libvirtd
+
+and finally check if the forward and reverse lookup works:
+   dig test.local @${HOST_IP}
+   dig -x 1.2.3.4 @${HOST_IP}
+   
+Verify that you get answers in both the above dig queries.
+
+Make sure that any entry in the dnsmasq.d is also picked up by libvirt/kvm. 
+You can test this by adding a test srv record:
+   echo "srv-host=test.local,yayyy.local,2380,0,10" > ${DNS_DIR}/temp-test.conf
+
+systemctl reload NetworkManager
+
+test that both libvirt and your host can resolve the srv record:
+   dig srv test.local
+   dig srv test.local @${HOST_IP}
+verify that you get the srv answer (yayy.local) in both the above dig queries.
+----
+
+----
+ssh-keygen
+BASE_DOM="local"
+CLUSTER_NAME="ocp43"
+SSH_KEY="/root/.ssh/id_rsa.pub"
+PULL_SEC='<your pull secret from https://cloud.redhat.com/openshift/install/metal/user-provisioned>'
+----
+
+----
+mkdir rhcos-install
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-kernel -O rhcos-install/vmlinuz
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img -O rhcos-install/initramfs.img
+----
+
+----
+cat <<EOF > rhcos-install/.treeinfo
+[general]
+arch = x86_64
+family = Red Hat CoreOS
+platforms = x86_64
+version = 4.3.0
+[images-x86_64]
+initrd = initramfs.img
+kernel = vmlinuz
+EOF
+----
+
+----
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-metal.raw.gz
+
+Go to
+https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.1/x86_64/product-software
+and copy the download link of Red Hat Enterprise Linux KVM Guest Image 
+(right-click on "Download Now" and copy link location)
+
+wget "https://access.cdn.redhat.com/content/.../rhel-8.1-x86_64-kvm.qcow2?user=...&_auth_=..." -O /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2
+
+RHNUSER='your Red Hat Customer Portal username'
+RHNPASS='<your Red Hat Customer Portal password'
+----
+
+----
+wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-install-linux-4.3.0.tar.gz
+wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-client-linux-4.3.0.tar.gz
+
+tar xf openshift-client-linux-4.3.0.tar.gz
+tar xf openshift-install-linux-4.3.0.tar.gz
+rm -f README.md
+----
+
+----
+mkdir install_dir
+----
+
+----
+cat <<EOF > install_dir/install-config.yaml
+apiVersion: v1
+baseDomain: ${BASE_DOM}
+compute:
+- hyperthreading: Disabled
+  name: worker
+  replicas: 0
+controlPlane:
+  hyperthreading: Disabled
+  name: master
+  replicas: 3
+metadata:
+  name: ${CLUSTER_NAME}
+networking:
+  clusterNetworks:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  none: {}
+pullSecret: '${PULL_SEC}'
+sshKey: '$(cat $SSH_KEY)'
+EOF
+----
+
+----
+./openshift-install create ignition-configs --dir=./install_dir
+----
+
+
+----
+Start python3 webserver
+----
+
+----
+WEB_PORT=8000
+tmux  new -s webserver
+bash -c "python3 -m http.server"
+curl http://localhost:8000
+
+Useful tmux commands:
+ctrl-b d to detach
+tmux ls
+tmux attach-session -t webserver
+----
+
+----
+If using firewalld
+firewall-cmd --add-source=${HOST_NET}
+firewall-cmd --add-port=${WEB_PORT}/tcp
+
+If using iptables
+iptables -I INPUT -p tcp -m tcp --dport ${WEB_PORT} -s ${HOST_NET} -j ACCEPT
+----
+
+----
+virt-install --name ${CLUSTER_NAME}-bootstrap \
+  --disk size=50 --ram 16000 --cpu host --vcpus 4 \
+  --os-type linux --os-variant rhel7.0 \
+  --network network=${VIR_NET} --noreboot --noautoconsole \
+  --location rhcos-install/ \
+  --extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.3.0-x86_64-metal.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/bootstrap.ign"
+----
+
+----
+for i in {1..3}
+do
+virt-install --name ${CLUSTER_NAME}-master-${i} \
+--disk size=50 --ram 16000 --cpu host --vcpus 4 \
+--os-type linux --os-variant rhel7.0 \
+--network network=${VIR_NET} --noreboot --noautoconsole \
+--location rhcos-install/ \
+--extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.3.0-x86_64-metal.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/master.ign"
+done
+----
+
+
+----
+for i in {1..2}
+do
+  virt-install --name ${CLUSTER_NAME}-worker-${i} \
+  --disk size=50 --ram 8192 --cpu host --vcpus 4 \
+  --os-type linux --os-variant rhel7.0 \
+  --network network=${VIR_NET} --noreboot --noautoconsole \
+  --location rhcos-install/ \
+  --extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.3.0-x86_64-metal.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/worker.ign"
+done
+----
+
+----
+virsh list --all
+ Id    Name                           State
+----------------------------------------------------
+ 2     ocp43-master-1                 running
+ 3     ocp43-master-2                 running
+ 4     ocp43-master-3                 running
+ 5     ocp43-worker-1                 running
+ 6     ocp43-worker-2                 running
+ -     ocp43-bootstrap                shut off
+----
+
+----
+virt-customize -a /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2 \
+  --uninstall cloud-init \
+  --ssh-inject root:file:$SSH_KEY --selinux-relabel \
+  --sm-credentials "${RHNUSER}:password:${RHNPASS}" \
+  --sm-register --sm-attach auto --install haproxy
+----
+
+----
+virt-install --import --name ${CLUSTER_NAME}-lb \
+  --disk /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2 --memory 1024 --cpu host --vcpus 1 \
+  --network network=${VIR_NET} --noreboot --noautoconsole
+----
+
+----
+echo "local=/${CLUSTER_NAME}.${BASE_DOM}/" > ${DNS_DIR}/${CLUSTER_NAME}.conf
+----
+
+----
+for x in lb bootstrap master-1 master-2 master-3 worker-1 worker-2
+do
+  virsh start ${CLUSTER_NAME}-$x
+done
+----
+
+----
+virsh list --all
+ Id    Name                           State
+----------------------------------------------------
+ 8     ocp43-lb                       running
+ 9     ocp43-bootstrap                running
+ 10    ocp43-master-1                 running
+ 11    ocp43-master-2                 running
+ 12    ocp43-master-3                 running
+ 13    ocp43-worker-1                 running
+ 14    ocp43-worker-2                 running
+----
+
+----
+Ensure that all machines received an IP and MAC:
+----
+
+----
+for x in lb bootstrap master-1 master-2 master-3 worker-1 worker-2
+do
+  virsh --connect qemu:///system reboot  "${CLUSTER_NAME}-$x"
+  echo `virsh domifaddr "${CLUSTER_NAME}-$x"`
+done
+----
+
+----
+IP=$(virsh domifaddr "${CLUSTER_NAME}-bootstrap" | grep ipv4 | head -n1 | awk '{print $4}' | cut -d'/' -f1)
+MAC=$(virsh domifaddr "${CLUSTER_NAME}-bootstrap" | grep ipv4 | head -n1 | awk '{print $2}')
+virsh net-update ${VIR_NET} add-last ip-dhcp-host --xml "<host mac='$MAC' ip='$IP'/>" --live --config
+Updated network default persistent config and live state
+echo "$IP bootstrap.${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
+----
+
+----
+cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+192.168.122.104 bootstrap.ocp43.local
+----
+
+
+----
+for i in {1..3}
+do
+  IP=$(virsh domifaddr "${CLUSTER_NAME}-master-${i}" | grep ipv4 | head -n1 | awk '{print $4}' | cut -d'/' -f1)
+  MAC=$(virsh domifaddr "${CLUSTER_NAME}-master-${i}" | grep ipv4 | head -n1 | awk '{print $2}')
+  virsh net-update ${VIR_NET} add-last ip-dhcp-host --xml "<host mac='$MAC' ip='$IP'/>" --live --config
+  echo "$IP master-${i}.${CLUSTER_NAME}.${BASE_DOM}" \
+  "etcd-$((i-1)).${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
+  echo "srv-host=_etcd-server-ssl._tcp.${CLUSTER_NAME}.${BASE_DOM},etcd-$((i-1)).${CLUSTER_NAME}.${BASE_DOM},2380,0,10" >> ${DNS_DIR}/${CLUSTER_NAME}.conf
+done
+----
+
+----
+[root@dell-r730-001 ocp4]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+192.168.122.104 bootstrap.ocp43.local
+192.168.122.75 master-1.ocp43.local etcd-0.ocp43.local
+192.168.122.170 master-2.ocp43.local etcd-1.ocp43.local
+192.168.122.224 master-3.ocp43.local etcd-2.ocp43.local
+----
+
+
+----
+for i in {1..2}
+do
+   IP=$(virsh domifaddr "${CLUSTER_NAME}-worker-${i}" | grep ipv4 | head -n1 | awk '{print $4}' | cut -d'/' -f1)
+   MAC=$(virsh domifaddr "${CLUSTER_NAME}-worker-${i}" | grep ipv4 | head -n1 | awk '{print $2}')
+   virsh net-update ${VIR_NET} add-last ip-dhcp-host --xml "<host mac='$MAC' ip='$IP'/>" --live --config
+   echo "$IP worker-${i}.${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
+done
+----
+
+
+----
+[root@dell-r730-001 ocp4]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+192.168.122.104 bootstrap.ocp43.local
+192.168.122.75 master-1.ocp43.local etcd-0.ocp43.local
+192.168.122.170 master-2.ocp43.local etcd-1.ocp43.local
+192.168.122.224 master-3.ocp43.local etcd-2.ocp43.local
+192.168.122.247 worker-1.ocp43.local
+192.168.122.73 worker-2.ocp43.local
+----
+
+----
+LBIP=$(virsh domifaddr "${CLUSTER_NAME}-lb" | grep ipv4 | head -n1 | awk '{print $4}' | cut -d'/' -f1)
+MAC=$(virsh domifaddr "${CLUSTER_NAME}-lb" | grep ipv4 | head -n1 | awk '{print $2}')
+virsh net-update ${VIR_NET} add-last ip-dhcp-host --xml "<host mac='$MAC' ip='$LBIP'/>" --live --config
+echo "$LBIP lb.${CLUSTER_NAME}.${BASE_DOM}" \
+"api.${CLUSTER_NAME}.${BASE_DOM}" \
+"api-int.${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
+----
+
+
+----
+cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+192.168.122.104 bootstrap.ocp43.local
+192.168.122.75 master-1.ocp43.local etcd-0.ocp43.local
+192.168.122.170 master-2.ocp43.local etcd-1.ocp43.local
+192.168.122.224 master-3.ocp43.local etcd-2.ocp43.local
+192.168.122.247 worker-1.ocp43.local
+192.168.122.73 worker-2.ocp43.local
+192.168.122.205 lb.ocp43.local api.ocp43.local api-int.ocp43.local
+----
+
+----
+echo "address=/apps.${CLUSTER_NAME}.${BASE_DOM}/${LBIP}" >> ${DNS_DIR}/${CLUSTER_NAME}.conf
+----
+
+
+----
+cat ${DNS_DIR}/${CLUSTER_NAME}.conf
+local=/ocp43.local/
+srv-host=_etcd-server-ssl._tcp.ocp43.local,etcd-0.ocp43.local,2380,0,10
+srv-host=_etcd-server-ssl._tcp.ocp43.local,etcd-1.ocp43.local,2380,0,10
+srv-host=_etcd-server-ssl._tcp.ocp43.local,etcd-2.ocp43.local,2380,0,10
+address=/apps.ocp43.local/192.168.122.205
+----
+
+
+----
+ssh lb.${CLUSTER_NAME}.${BASE_DOM} <<EOF
+
+# Allow haproxy to listen on custom ports
+semanage port -a -t http_port_t -p tcp 6443
+semanage port -a -t http_port_t -p tcp 22623
+
+echo '
+global
+  log 127.0.0.1 local2
+  chroot /var/lib/haproxy
+  pidfile /var/run/haproxy.pid
+  maxconn 4000
+  user haproxy
+  group haproxy
+  daemon
+  stats socket /var/lib/haproxy/stats
+
+defaults
+  mode tcp
+  log global
+  option tcplog
+  option dontlognull
+  option redispatch
+  retries 3
+  timeout queue 1m
+  timeout connect 10s
+  timeout client 1m
+  timeout server 1m
+  timeout check 10s
+  maxconn 3000
+# 6443 points to control plan
+frontend ${CLUSTER_NAME}-api
+  bind *:6443
+  default_backend master-api
+backend master-api
+  balance source
+  server bootstrap bootstrap.${CLUSTER_NAME}.${BASE_DOM}:6443 check
+  server master-1 master-1.${CLUSTER_NAME}.${BASE_DOM}:6443 check
+  server master-2 master-2.${CLUSTER_NAME}.${BASE_DOM}:6443 check
+  server master-3 master-3.${CLUSTER_NAME}.${BASE_DOM}:6443 check
+
+# 22623 points to control plane
+frontend ${CLUSTER_NAME}-mapi
+bind *:22623
+  default_backend master-mapi
+backend master-mapi
+  balance source
+  server bootstrap bootstrap.${CLUSTER_NAME}.${BASE_DOM}:22623 check
+  server master-1 master-1.${CLUSTER_NAME}.${BASE_DOM}:22623 check
+  server master-2 master-2.${CLUSTER_NAME}.${BASE_DOM}:22623 check
+  server master-3 master-3.${CLUSTER_NAME}.${BASE_DOM}:22623 check
+
+# 80 points to worker nodes
+frontend ${CLUSTER_NAME}-http
+  bind *:80
+  default_backend ingress-http
+backend ingress-http
+  balance source
+  server worker-1 worker-1.${CLUSTER_NAME}.${BASE_DOM}:80 check
+  server worker-2 worker-2.${CLUSTER_NAME}.${BASE_DOM}:80 check
+
+# 443 points to worker nodes
+frontend ${CLUSTER_NAME}-https
+bind *:443
+  default_backend infra-https
+backend infra-https
+  balance source
+  server worker-1 worker-1.${CLUSTER_NAME}.${BASE_DOM}:443 check
+  server worker-2 worker-2.${CLUSTER_NAME}.${BASE_DOM}:443 check
+' > /etc/haproxy/haproxy.cfg
+
+systemctl start haproxy
+systemctl enable haproxy
+EOF
+----
+
+----
+ssh lb.${CLUSTER_NAME}.${BASE_DOM} dnf -y  install net-tools
+----
+
+----
+ssh lb.${CLUSTER_NAME}.${BASE_DOM} netstat -nltupe | grep ':6443\|:22623\|:80\|:443'
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      0          32495      4113/haproxy
+tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      0          32496      4113/haproxy
+tcp        0      0 0.0.0.0:22623           0.0.0.0:*               LISTEN      0          32494      4113/haproxy
+tcp        0      0 0.0.0.0:6443            0.0.0.0:*               LISTEN      0          32492      4113/haproxy
+----
+
+----
+systemctl reload NetworkManager
+systemctl restart libvirtd
+----
+
+----
+ping -c 1 master-1.ocp43.local
+ping -c 1 master-2.ocp43.local
+ping -c 1 master-3.ocp43.local
+ping -c 1 worker-1.ocp43.local
+ping -c 1  worker-2.ocp43.local
+ping -c 1   bootstrap.ocp43.local
+ping -c 1  etcd-0.ocp43.local
+ping -c 1  etcd-1.ocp43.local
+ping -c 1 etcd-3.ocp43.local
+ping  -c 1 api.ocp43.local
+ping  -c 1 api-int.ocp43.local
+----
+
+----
+The DNS lookup for the API endpoints also needs to be in place.
+OpenShift 4 expects api.$CLUSTERDOMAIN and api-int.$CLUSTERDOMAIN to be configured, 
+they can both be set to the same IP address – which will be the IP of the Load Balancer.
+ping  -c 1 api.ocp43.local
+ping  -c 1 api-int.ocp43.local
+----
+
+----
+A wildcard DNS entry needs to be in place for the OpenShift 4 ingress router, 
+which is also a load balanced endpoint.
+dig *.apps.ocp43.local +short
+192.168.122.205
+----
+
+
+----
+In addition to the mentioned entries, you’ll also need to add SRV records.
+These records are needed for the masters to find the etcd servers.
+This needs to be in the form of _etcd-server-ssl._tcp.$CLUSTERDOMMAIN in your DNS server.
+----
+
+
+----
+dig _etcd-server-ssl._tcp.ocp43.local SRV +short
+0 10 2380 etcd-1.ocp43.local.
+0 10 2380 etcd-0.ocp43.local.
+0 10 2380 etcd-2.ocp43.local.
+----
+
+
+----
+./openshift-install --dir=install_dir wait-for bootstrap-complete
+----
+
+----
+ssh core@bootstrap.ocp43.local journalctl -b -f -u bootkube.service
+----
+
+
+----
+./openshift-install --dir=install_dir wait-for bootstrap-complete
+INFO Waiting up to 30m0s for the Kubernetes API at https://api.ocp43.local:6443...
+INFO API v1.16.2 up
+INFO Waiting up to 30m0s for bootstrapping to complete...
+INFO It is now safe to remove the bootstrap resources
+----
+
+----
+cd ocp4
+export KUBECONFIG=install_dir/auth/kubeconfig
+----
+
+----
+./oc get nodes
+master-1.ocp43.local   Ready    master,worker   9m26s   v1.16.2
+master-2.ocp43.local   Ready    master,worker   9m20s   v1.16.2
+master-3.ocp43.local   Ready    master,worker   9m6s    v1.16.2
+worker-1.ocp43.local   Ready    worker          9m20s   v1.16.2
+worker-2.ocp43.local   Ready    worker          9m21s   v1.16.2
+----
+
+----
+./oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
+----
+
+
+----
+watch "./oc get clusterversion; echo; ./oc get clusteroperators"
+NAME                                       VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCE
+authentication                                       False	     True          False	  76s
+cloud-credential                           4.3.0     True        False         False	  11m
+cluster-autoscaler                         4.3.0     True        False         False	  107s
+console                                    4.3.0     False	     True          False	  2m5s
+dns                                        4.3.0     True        False         False	  5m22s
+image-registry                             4.3.0     True        False         False	  2m30s
+ingress                                    4.3.0     True        False         False	  119s
+insights                                   4.3.0     True        False         False	  6m59s
+kube-apiserver                             4.3.0     True        True          True	  4m27s
+kube-controller-manager                    4.3.0     True        True          False	  4m25s
+kube-scheduler                             4.3.0     True        True          False	  4m20s
+machine-api                                4.3.0     True        False         False	  5m59s
+machine-config                             4.3.0     True        False         False	  4m26s
+marketplace                                4.3.0     True        False         False	  106s
+monitoring                                           Unknown     True          Unknown    2m29s
+network                                    4.3.0     True        False         False	  7m12s
+node-tuning                                4.3.0     True        False         False	  3m2s
+openshift-apiserver                        4.3.0     True        False         False	  2m54s
+openshift-controller-manager               4.3.0     True        False         False	  4m36s
+openshift-samples                          4.3.0     True        False         False	  88s
+operator-lifecycle-manager                 4.3.0     True        False         False	  5m59s
+operator-lifecycle-manager-catalog         4.3.0     True        False         False	  5m59s
+operator-lifecycle-manager-packageserver   4.3.0     True        False         False	  3m23s
+service-ca                                 4.3.0     True        False         False	  6m52s
+service-catalog-apiserver                  4.3.0     True        False         False	  3m13s
+service-catalog-controller-manager         4.3.0     True        False         False	  3m17s
+storage                                    4.3.0     True        False         False	  2m29s
+----
+
+----
+Get kubeadmin's password
+cat install_dir/auth/kubeadmin-password
+----
+
+----
+On your local machine, add
+console-openshift-console.apps.ocp43.local and
+oauth-openshift.apps.ocp43.local
+to /etc/hosts, pointing to 127.0.0.1
+----
+
+----
+sudo ssh root@<your KVM host> -L 443:console-openshift-console.apps.ocp43.local:443
+----
+
+----
+You can now connect to https://console-openshift-console.apps.ocp43.local
+as kubeadmin
+with the password you got from install_dir/auth/kubeadmin-password.
+----
+
+
+image:images/ocp43_upi.png[title="OCP 4.3 dashboard"] 
+
+
+== SDN packet flow
+
+
+----
+Let's deploy a DaemonSet so that we get a container running on each worker node.
+---- 
+
+
+----
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: tcpdump
+spec:
+  template:
+    metadata:
+      labels:
+        marc: tcpdump
+    spec:
+      nodeSelector:
+        marc: tcpdump-node
+      containers:
+        - name: tcpdump
+          image: corfr/tcpdump
+          command:
+          - bin/sleep
+          - infinity
+----
+
+
+----
+oc label node worker-1.ocp43.local marc=tcpdump-node
+oc label node worker-2.ocp43.local marc=tcpdump-node
+----
+
+----
+In my case, the IP address seen from inside each container are 10.128.2.17 and 10.129.0.17
+----
+
+----
+oc rsh tcpdump-9prsr
+/ # ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+3: eth0@if22: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1450 qdisc noqueue state UP
+    link/ether 0a:58:0a:81:00:11 brd ff:ff:ff:ff:ff:ff
+    inet 10.129.0.17/23 brd 10.129.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::c45d:ddff:febc:8a53/64 scope link
+       valid_lft forever preferred_lft forever
+       
+/ # ping 10.128.2.17
+PING 10.128.2.17 (10.128.2.17): 56 data bytes
+64 bytes from 10.128.2.17: seq=0 ttl=64 time=1.876 ms
+64 bytes from 10.128.2.17: seq=1 ttl=64 time=0.468 ms
+64 bytes from 10.128.2.17: seq=2 ttl=64 time=0.389 ms
+^C
+--- 10.128.2.17 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 0.389/0.911/1.876 ms
+----
+
+
+----
+In OpenShift we only have a switch (br0) although OpenvSwitch allows to have more.
+Each switch contains multiple ports. The vxlan0 is responsible for encapsulating packets.
+The tun0 is the node IP address on the overlay, the rest of ports are pods.
+----
+
+----
+ssh core@worker-1.ocp43.local
+[core@worker-1 ~]$ sudo  ovs-ofctl show -O OpenFlow13 br0  | grep tun0
+2(tun0): addr:8e:89:0a:37:b8:64
+----
+
+
+
+----
+[core@worker-1 ~]$ sudo ovs-appctl ofproto/trace br0 in_port=2,tcp,nw_src=10.129.0.17,nw_dst=10.128.2.17
+Flow: tcp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,nw_src=10.129.0.17,nw_dst=10.128.2.17,nw_tos=0,nw_ecn=0,nw_ttl=0,tp_src=0,tp_dst=0,tcp_flags=0
+
+bridge("br0")
+-------------
+ 0. ct_state=-trk,ip, priority 300
+    ct(table=0)
+    drop
+     -> A clone of the packet is forked to recirculate. The forked pipeline will be resumed at table 0.
+     -> Sets the packet to an untracked state, and clears all the conntrack fields.
+
+Final flow: unchanged
+Megaflow: recirc_id=0,ct_state=-trk,eth,ip,in_port=2,nw_src=10.129.0.16/28,nw_frag=no
+Datapath actions: ct,recirc(0x696a5)
+
+===============================================================================
+recirc(0x696a5) - resume conntrack with default ct_state=trk|new (use --ct-next to customize)
+===============================================================================
+
+Flow: recirc_id=0x696a5,ct_state=new|trk,eth,tcp,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,nw_src=10.129.0.17,nw_dst=10.128.2.17,nw_tos=0,nw_ecn=0,nw_ttl=0,tp_src=0,tp_dst=0,tcp_flags=0
+
+bridge("br0")
+-------------
+    thaw
+        Resuming from table 0
+ 0. ip,in_port=2,nw_src=10.129.0.0/23,nw_dst=10.128.0.0/14, priority 300
+    goto_table:25
+25. ip,nw_src=10.129.0.17, priority 100
+    load:0->NXM_NX_REG0[]
+    goto_table:30
+30. ip,nw_dst=10.128.0.0/14, priority 100
+    goto_table:90
+90. ip,nw_dst=10.128.2.0/23, priority 100, cookie 0x57bbdba6
+    move:NXM_NX_REG0[]->NXM_NX_TUN_ID[0..31]
+     -> NXM_NX_TUN_ID[0..31] is now 0
+    set_field:192.168.122.73->tun_dst
+    output:1
+     -> output to kernel tunnel
+
+Final flow: recirc_id=0x696a5,ct_state=new|trk,eth,tcp,tun_src=0.0.0.0,tun_dst=192.168.122.73,tun_ipv6_src=::,tun_ipv6_dst=::,tun_gbp_id=0,tun_gbp_flags=0,tun_tos=0,tun_ttl=0,tun_erspan_ver=0,tun_flags=0,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,nw_src=10.129.0.17,nw_dst=10.128.2.17,nw_tos=0,nw_ecn=0,nw_ttl=0,tp_src=0,tp_dst=0,tcp_flags=0
+Megaflow: recirc_id=0x696a5,ct_state=-rpl+trk,eth,ip,tun_id=0/0xffffffff,tun_dst=0.0.0.0,in_port=2,nw_src=10.129.0.17,nw_dst=10.128.2.0/23,nw_ecn=0,nw_frag=no
+Datapath actions: set(tunnel(tun_id=0x0,dst=192.168.122.73,ttl=64,tp_dst=4789,flags(df|key))),2
+
+NOTE: 192.168.122.73 is worker-2 (where the destination pod runs)
+----
+
+
+----
+Sources:
+https://developers.redhat.com/blog/2016/10/12/tracing-packets-inside-open-vswitch/
+http://docs.openvswitch.org/en/latest/topics/tracing/
+https://developers.redhat.com/blog/2019/02/27/sidecars-analyze-debug-network-traffic-kubernetes-pod/
+https://developers.redhat.com/blog/2019/08/22/troubleshooting-red-hat-openshift-applications-with-throwaway-containers/
+https://medium.com/@NTTICT/vxlan-explained-930cc825a51
+----
