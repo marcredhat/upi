@@ -39,6 +39,16 @@ subscription-manager list --available
 subscription-manager attach --pool <pool>
 ----
 
+----
+Disable IPv6
+vi /etc/sysctl.d/70-ipv6.conf
+Next, add the following lines and save the file.
+
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+
+sysctl --load /etc/sysctl.d/70-ipv6.conf
+----
 
 ----
 dnf -y update  && dnf -y upgrade
