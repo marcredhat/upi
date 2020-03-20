@@ -125,7 +125,7 @@ verify that you get the srv answer (yayy.local) in both the above dig queries.
 ----
 ssh-keygen
 BASE_DOM="local"
-CLUSTER_NAME="ocp43"
+CLUSTER_NAME="ocp44"
 SSH_KEY="/root/.ssh/id_rsa.pub"
 PULL_SEC='<your pull secret from https://cloud.redhat.com/openshift/install/metal/user-provisioned>'
 ----
