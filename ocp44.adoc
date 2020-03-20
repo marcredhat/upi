@@ -300,7 +300,7 @@ virt-customize -a /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2 \
 
 ----
 virt-install --import --name ${CLUSTER_NAME}-lb \
-  --disk /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2 --memory 1024 --cpu host --vcpus 1 \
+  --disk /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2 --memory 4096 --cpu host --vcpus 2 \
   --network network=${VIR_NET} --noreboot --noautoconsole
 ----
 
