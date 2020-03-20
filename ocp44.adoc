@@ -240,7 +240,7 @@ virt-install --name ${CLUSTER_NAME}-bootstrap \
   --os-type linux --os-variant rhel7.0 \
   --network network=${VIR_NET} --noreboot --noautoconsole \
   --location rhcos-install/ \
-  --extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.3.0-x86_64-metal.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/bootstrap.ign"
+  --extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.4.0-rc.1-x86_64-metal.x86_64.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/bootstrap.ign"
 ----
 
 ----
@@ -251,7 +251,7 @@ virt-install --name ${CLUSTER_NAME}-master-${i} \
 --os-type linux --os-variant rhel7.0 \
 --network network=${VIR_NET} --noreboot --noautoconsole \
 --location rhcos-install/ \
---extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.3.0-x86_64-metal.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/master.ign"
+--extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.4.0-rc.1-x86_64-metal.x86_64.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/master.ign"
 done
 ----
 
@@ -264,7 +264,7 @@ do
   --os-type linux --os-variant rhel7.0 \
   --network network=${VIR_NET} --noreboot --noautoconsole \
   --location rhcos-install/ \
-  --extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.3.0-x86_64-metal.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/worker.ign"
+  --extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.4.0-rc.1-x86_64-metal.x86_64.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/worker.ign"
 done
 ----
 
