@@ -810,9 +810,5 @@ https://medium.com/@NTTICT/vxlan-explained-930cc825a51
 ----
 Gathering logs from failed installations:
 
-./openshift-install gather bootstrap --dir=./install_dir \ 
-    --bootstrap bootstrap.${CLUSTER_NAME}.${BASE_DOM} \ 
-    --master master-1.${CLUSTER_NAME}.${BASE_DOM} \ 
-    --master master-2.${CLUSTER_NAME}.${BASE_DOM} \ 
-    --master master-3.${CLUSTER_NAME}.${BASE_DOM}
+./openshift-install gather bootstrap --dir=./install_dir --bootstrap bootstrap.${CLUSTER_NAME}.${BASE_DOM} --master master-1.${CLUSTER_NAME}.${BASE_DOM} --master master-2.${CLUSTER_NAME}.${BASE_DOM} --master master-3.${CLUSTER_NAME}.${BASE_DOM}
 ----
