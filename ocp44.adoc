@@ -427,6 +427,10 @@ echo "address=/apps.${CLUSTER_NAME}.${BASE_DOM}/${LBIP}" >> ${DNS_DIR}/${CLUSTER
 
 
 ----
+echo "server=/${CLUSTER_NAME}.${BASE_DOM}/${LBIP}" >> ${DNS_DIR}/${CLUSTER_NAME}.conf
+----
+
+----
 cat ${DNS_DIR}/${CLUSTER_NAME}.conf
 local=/ocp43.local/
 srv-host=_etcd-server-ssl._tcp.ocp43.local,etcd-0.ocp43.local,2380,0,10
