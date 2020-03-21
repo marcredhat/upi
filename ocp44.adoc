@@ -220,6 +220,11 @@ EOF
 
 
 ----
+Domain entry in cluster-ingress-02-config.yml file should not contain cluster name
+$ sed -i 's/${CLUSTER_NAME}.//' $INSTALL_DIR/manifests/cluster-ingress-02-config.yml
+----
+
+----
 Start python3 webserver
 ----
 
