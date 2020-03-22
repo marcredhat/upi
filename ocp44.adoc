@@ -267,27 +267,7 @@ done
 
 
 ----
-for i in {1..6}
-do
-  virt-install --name ${CLUSTER_NAME}-worker-${i} \
-  --disk size=50 --ram 16000 --cpu host --vcpus 4 \
-  --os-type linux --os-variant rhel7.0 \
-  --network network=${VIR_NET} --noreboot --noautoconsole \
-  --location rhcos-install/ \
-  --extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://${HOST_IP}:${WEB_PORT}/rhcos-4.4.0-rc.1-x86_64-metal.x86_64.raw.gz coreos.inst.ignition_url=http://${HOST_IP}:${WEB_PORT}/install_dir/worker.ign"
-done
-----
-
-----
-virsh list --all
- Id    Name                           State
-----------------------------------------------------
- 2     ocp44-master-1                 running
- 3     ocp44-master-2                 running
- 4     ocp44-master-3                 running
- 5     ocp44-worker-1                 running
- 6     ocp44-worker-2                 running
- -     ocp44-bootstrap                shut off
+virsh list --all 
 ----
 
 ----
@@ -309,7 +289,7 @@ echo "local=/${CLUSTER_NAME}.${BASE_DOM}/" > ${DNS_DIR}/${CLUSTER_NAME}.conf
 ----
 
 ----
-for x in lb bootstrap master-1 master-2 master-3 worker-1 worker-2
+for x in lb bootstrap master-1 master-2 master-3 master-4 master-5 master-6 
 do
   virsh start ${CLUSTER_NAME}-$x
 done
@@ -317,15 +297,6 @@ done
 
 ----
 virsh list --all
- Id    Name                           State
-----------------------------------------------------
- 8     ocp44-lb                       running
- 9     ocp44-bootstrap                running
- 10    ocp44-master-1                 running
- 11    ocp44-master-2                 running
- 12    ocp44-master-3                 running
- 13    ocp44-worker-1                 running
- 14    ocp44-worker-2                 running
 ----
 
 ----
@@ -333,7 +304,7 @@ Ensure that all machines received an IP and MAC:
 ----
 
 ----
-for x in lb bootstrap master-1 master-2 master-3 worker-1 worker-2
+for x in lb bootstrap master-1 master-2 master-3 master-4 master-5 master-6 
 do
   virsh --connect qemu:///system reboot  "${CLUSTER_NAME}-$x"
   echo `virsh domifaddr "${CLUSTER_NAME}-$x"`
@@ -349,14 +320,7 @@ echo "$IP bootstrap.${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
 ----
 
 ----
-cat /etc/hosts
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-192.168.122.104 bootstrap.ocp43.local
-----
-
-
-----
-for i in {1..3}
+for i in {1..6}
 do
   IP=$(virsh domifaddr "${CLUSTER_NAME}-master-${i}" | grep ipv4 | head -n1 | awk '{print $4}' | cut -d'/' -f1)
   MAC=$(virsh domifaddr "${CLUSTER_NAME}-master-${i}" | grep ipv4 | head -n1 | awk '{print $2}')
@@ -365,38 +329,6 @@ do
   "etcd-$((i-1)).${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
   echo "srv-host=_etcd-server-ssl._tcp.${CLUSTER_NAME}.${BASE_DOM},etcd-$((i-1)).${CLUSTER_NAME}.${BASE_DOM},2380,0,10" >> ${DNS_DIR}/${CLUSTER_NAME}.conf
 done
-----
-
-----
-[root@dell-r730-001 ocp4]# cat /etc/hosts
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-192.168.122.104 bootstrap.ocp44.local
-192.168.122.75 master-1.ocp44.local etcd-0.ocp44.local
-192.168.122.170 master-2.ocp44.local etcd-1.ocp44.local
-192.168.122.224 master-3.ocp44.local etcd-2.ocp44.local
-----
-
-
-----
-for i in {1..2}
-do
-   IP=$(virsh domifaddr "${CLUSTER_NAME}-worker-${i}" | grep ipv4 | head -n1 | awk '{print $4}' | cut -d'/' -f1)
-   MAC=$(virsh domifaddr "${CLUSTER_NAME}-worker-${i}" | grep ipv4 | head -n1 | awk '{print $2}')
-   virsh net-update ${VIR_NET} add-last ip-dhcp-host --xml "<host mac='$MAC' ip='$IP'/>" --live --config
-   echo "$IP worker-${i}.${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
-done
-----
-
-
-----
-[root@dell-r730-001 ocp4]# cat /etc/hosts
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-192.168.122.104 bootstrap.ocp44.local
-192.168.122.75 master-1.ocp44.local etcd-0.ocp44.local
-192.168.122.170 master-2.ocp44.local etcd-1.ocp44.local
-192.168.122.224 master-3.ocp44.local etcd-2.ocp44.local
-192.168.122.247 worker-1.ocp44.local
-192.168.122.73 worker-2.ocp44.local
 ----
 
 ----
@@ -410,18 +342,6 @@ echo "$LBIP lb.${CLUSTER_NAME}.${BASE_DOM}" \
 
 
 ----
-cat /etc/hosts
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-192.168.122.104 bootstrap.ocp44.local
-192.168.122.75 master-1.ocp44.local etcd-0.ocp44.local
-192.168.122.170 master-2.ocp44.local etcd-1.ocp44.local
-192.168.122.224 master-3.ocp44.local etcd-2.ocp44.local
-192.168.122.247 worker-1.ocp44.local
-192.168.122.73 worker-2.ocp44.local
-192.168.122.205 lb.ocp44.local api.ocp44.local api-int.ocp44.local
-----
-
-----
 echo "address=/apps.${CLUSTER_NAME}.${BASE_DOM}/${LBIP}" >> ${DNS_DIR}/${CLUSTER_NAME}.conf
 ----
 
@@ -432,10 +352,13 @@ echo "server=/${CLUSTER_NAME}.${BASE_DOM}/${LBIP}" >> ${DNS_DIR}/${CLUSTER_NAME}
 
 ----
 cat ${DNS_DIR}/${CLUSTER_NAME}.conf
-local=/ocp43.local/
+local=/ocp44.local/
 srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-0.ocp44.local,2380,0,10
 srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-1.ocp44.local,2380,0,10
 srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-2.ocp44.local,2380,0,10
+srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-3.ocp44.local,2380,0,10
+srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-4.ocp44.local,2380,0,10
+srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-5.ocp44.local,2380,0,10
 address=/apps.ocp44.local/192.168.122.205
 ----
 
@@ -481,6 +404,9 @@ backend master-api
   server master-1 master-1.${CLUSTER_NAME}.${BASE_DOM}:6443 check
   server master-2 master-2.${CLUSTER_NAME}.${BASE_DOM}:6443 check
   server master-3 master-3.${CLUSTER_NAME}.${BASE_DOM}:6443 check
+  server master-4 master-4.${CLUSTER_NAME}.${BASE_DOM}:6443 check
+  server master-5 master-5.${CLUSTER_NAME}.${BASE_DOM}:6443 check
+  server master-6 master-6.${CLUSTER_NAME}.${BASE_DOM}:6443 check
 
 # 22623 points to control plane
 frontend ${CLUSTER_NAME}-mapi
@@ -492,6 +418,9 @@ backend master-mapi
   server master-1 master-1.${CLUSTER_NAME}.${BASE_DOM}:22623 check
   server master-2 master-2.${CLUSTER_NAME}.${BASE_DOM}:22623 check
   server master-3 master-3.${CLUSTER_NAME}.${BASE_DOM}:22623 check
+  server master-4 master-4.${CLUSTER_NAME}.${BASE_DOM}:22623 check
+  server master-5 master-5.${CLUSTER_NAME}.${BASE_DOM}:22623 check
+  server master-6 master-6.${CLUSTER_NAME}.${BASE_DOM}:22623 check
 
 # 80 points to worker nodes
 frontend ${CLUSTER_NAME}-http
@@ -499,8 +428,12 @@ frontend ${CLUSTER_NAME}-http
   default_backend ingress-http
 backend ingress-http
   balance source
-  server worker-1 worker-1.${CLUSTER_NAME}.${BASE_DOM}:80 check
-  server worker-2 worker-2.${CLUSTER_NAME}.${BASE_DOM}:80 check
+  server master-1 master-1.${CLUSTER_NAME}.${BASE_DOM}:80 check
+  server master-2 master-2.${CLUSTER_NAME}.${BASE_DOM}:80 check
+  server master-3 master-3.${CLUSTER_NAME}.${BASE_DOM}:80 check
+  server master-4 master-4.${CLUSTER_NAME}.${BASE_DOM}:80 check
+  server master-5 master-5.${CLUSTER_NAME}.${BASE_DOM}:80 check
+  server master-6 master-6.${CLUSTER_NAME}.${BASE_DOM}:80 check
 
 # 443 points to worker nodes
 frontend ${CLUSTER_NAME}-https
@@ -508,8 +441,12 @@ bind *:443
   default_backend infra-https
 backend infra-https
   balance source
-  server worker-1 worker-1.${CLUSTER_NAME}.${BASE_DOM}:443 check
-  server worker-2 worker-2.${CLUSTER_NAME}.${BASE_DOM}:443 check
+  server master-1 master-1.${CLUSTER_NAME}.${BASE_DOM}:443 check
+  server master-2 master-2.${CLUSTER_NAME}.${BASE_DOM}:443 check
+  server master-3 master-3.${CLUSTER_NAME}.${BASE_DOM}:443 check
+  server master-4 master-4.${CLUSTER_NAME}.${BASE_DOM}:443 check
+  server master-5 master-5.${CLUSTER_NAME}.${BASE_DOM}:443 check
+  server master-6 master-6.${CLUSTER_NAME}.${BASE_DOM}:443 check
 ' > /etc/haproxy/haproxy.cfg
 
 systemctl start haproxy
@@ -543,14 +480,18 @@ systemctl restart libvirtd
 ping -c 1 master-1.ocp44.local
 ping -c 1 master-2.ocp44.local
 ping -c 1 master-3.ocp44.local
-ping -c 1 worker-1.ocp44.local
-ping -c 1  worker-2.ocp44.local
-ping -c 1   bootstrap.ocp44.local
-ping -c 1  etcd-0.ocp44.local
-ping -c 1  etcd-1.ocp44.local
+ping -c 1 master-4.ocp44.local
+ping -c 1 master-5.ocp44.local
+ping -c 1 master-6.ocp44.local
+ping -c 1 bootstrap.ocp44.local
+ping -c 1 etcd-0.ocp44.local
+ping -c 1 etcd-1.ocp44.local
+ping -c 1 etcd-2.ocp44.local
 ping -c 1 etcd-3.ocp44.local
-ping  -c 1 api.ocp44.local
-ping  -c 1 api-int.ocp44.local
+ping -c 1 etcd-4.ocp44.local
+ping -c 1 etcd-5.ocp44.local
+ping -c 1 api.ocp44.local
+ping -c 1 api-int.ocp44.local
 ----
 
 ----
@@ -578,9 +519,12 @@ This needs to be in the form of _etcd-server-ssl._tcp.$CLUSTERDOMMAIN in your DN
 
 ----
 dig _etcd-server-ssl._tcp.ocp44.local SRV +short
-0 10 2380 etcd-1.ocp44.local.
 0 10 2380 etcd-0.ocp44.local.
+0 10 2380 etcd-1.ocp44.local.
 0 10 2380 etcd-2.ocp44.local.
+0 10 2380 etcd-3.ocp44.local.
+0 10 2380 etcd-4.ocp44.local.
+0 10 2380 etcd-5.ocp44.local.
 ----
 
 
@@ -618,8 +562,9 @@ export KUBECONFIG=install_dir/auth/kubeconfig
 master-1.ocp44.local   Ready    master,worker   9m26s   v1.16.2
 master-2.ocp44.local   Ready    master,worker   9m20s   v1.16.2
 master-3.ocp44.local   Ready    master,worker   9m6s    v1.16.2
-worker-1.ocp44.local   Ready    worker          9m20s   v1.16.2
-worker-2.ocp44.local   Ready    worker          9m21s   v1.16.2
+master-4.ocp44.local   Ready    master,worker   9m26s   v1.16.2
+master-5.ocp44.local   Ready    master,worker   9m20s   v1.16.2
+master-6.ocp44.local   Ready    master,worker   9m6s    v1.16.2
 ----
 
 
