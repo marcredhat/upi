@@ -1,6 +1,6 @@
 
 ----
-OpenShift 4.4 User Provisioned Infrastructure (UPI) Installation on KVM/Libvirt
+OpenShift 4.4 RC2 User Provisioned Infrastructure (UPI) Installation on KVM/Libvirt
 Based on Khizer Naeem's instructions for OCP 4.2 at 
 https://kxr.me/2019/08/17/openshift-4-upi-install-libvirt-kvm/
 
