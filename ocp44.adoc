@@ -319,13 +319,13 @@ done
 virsh list --all
  Id    Name                           State
 ----------------------------------------------------
- 8     ocp43-lb                       running
- 9     ocp43-bootstrap                running
- 10    ocp43-master-1                 running
- 11    ocp43-master-2                 running
- 12    ocp43-master-3                 running
- 13    ocp43-worker-1                 running
- 14    ocp43-worker-2                 running
+ 8     ocp44-lb                       running
+ 9     ocp44-bootstrap                running
+ 10    ocp44-master-1                 running
+ 11    ocp44-master-2                 running
+ 12    ocp44-master-3                 running
+ 13    ocp44-worker-1                 running
+ 14    ocp44-worker-2                 running
 ----
 
 ----
@@ -370,10 +370,10 @@ done
 ----
 [root@dell-r730-001 ocp4]# cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-192.168.122.104 bootstrap.ocp43.local
-192.168.122.75 master-1.ocp43.local etcd-0.ocp43.local
-192.168.122.170 master-2.ocp43.local etcd-1.ocp43.local
-192.168.122.224 master-3.ocp43.local etcd-2.ocp43.local
+192.168.122.104 bootstrap.ocp44.local
+192.168.122.75 master-1.ocp44.local etcd-0.ocp44.local
+192.168.122.170 master-2.ocp44.local etcd-1.ocp44.local
+192.168.122.224 master-3.ocp44.local etcd-2.ocp44.local
 ----
 
 
@@ -392,11 +392,11 @@ done
 [root@dell-r730-001 ocp4]# cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 192.168.122.104 bootstrap.ocp43.local
-192.168.122.75 master-1.ocp43.local etcd-0.ocp43.local
-192.168.122.170 master-2.ocp43.local etcd-1.ocp43.local
-192.168.122.224 master-3.ocp43.local etcd-2.ocp43.local
-192.168.122.247 worker-1.ocp43.local
-192.168.122.73 worker-2.ocp43.local
+192.168.122.75 master-1.ocp44.local etcd-0.ocp44.local
+192.168.122.170 master-2.ocp44.local etcd-1.ocp44.local
+192.168.122.224 master-3.ocp44.local etcd-2.ocp44.local
+192.168.122.247 worker-1.ocp44.local
+192.168.122.73 worker-2.ocp44.local
 ----
 
 ----
@@ -412,13 +412,13 @@ echo "$LBIP lb.${CLUSTER_NAME}.${BASE_DOM}" \
 ----
 cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-192.168.122.104 bootstrap.ocp43.local
-192.168.122.75 master-1.ocp43.local etcd-0.ocp43.local
-192.168.122.170 master-2.ocp43.local etcd-1.ocp43.local
-192.168.122.224 master-3.ocp43.local etcd-2.ocp43.local
-192.168.122.247 worker-1.ocp43.local
-192.168.122.73 worker-2.ocp43.local
-192.168.122.205 lb.ocp43.local api.ocp43.local api-int.ocp43.local
+192.168.122.104 bootstrap.ocp44.local
+192.168.122.75 master-1.ocp44.local etcd-0.ocp44.local
+192.168.122.170 master-2.ocp44.local etcd-1.ocp44.local
+192.168.122.224 master-3.ocp44.local etcd-2.ocp44.local
+192.168.122.247 worker-1.ocp44.local
+192.168.122.73 worker-2.ocp44.local
+192.168.122.205 lb.ocp44.local api.ocp44.local api-int.ocp44.local
 ----
 
 ----
@@ -433,10 +433,10 @@ echo "server=/${CLUSTER_NAME}.${BASE_DOM}/${LBIP}" >> ${DNS_DIR}/${CLUSTER_NAME}
 ----
 cat ${DNS_DIR}/${CLUSTER_NAME}.conf
 local=/ocp43.local/
-srv-host=_etcd-server-ssl._tcp.ocp43.local,etcd-0.ocp43.local,2380,0,10
-srv-host=_etcd-server-ssl._tcp.ocp43.local,etcd-1.ocp43.local,2380,0,10
-srv-host=_etcd-server-ssl._tcp.ocp43.local,etcd-2.ocp43.local,2380,0,10
-address=/apps.ocp43.local/192.168.122.205
+srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-0.ocp44.local,2380,0,10
+srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-1.ocp44.local,2380,0,10
+srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-2.ocp44.local,2380,0,10
+address=/apps.ocp44.local/192.168.122.205
 ----
 
 
@@ -578,9 +578,9 @@ This needs to be in the form of _etcd-server-ssl._tcp.$CLUSTERDOMMAIN in your DN
 
 ----
 dig _etcd-server-ssl._tcp.ocp44.local SRV +short
-0 10 2380 etcd-1.ocp43.local.
-0 10 2380 etcd-0.ocp43.local.
-0 10 2380 etcd-2.ocp43.local.
+0 10 2380 etcd-1.ocp44.local.
+0 10 2380 etcd-0.ocp44.local.
+0 10 2380 etcd-2.ocp44.local.
 ----
 
 
@@ -629,34 +629,7 @@ worker-2.ocp44.local   Ready    worker          9m21s   v1.16.2
 
 ----
 watch "./oc get clusterversion; echo; ./oc get clusteroperators"
-NAME                                       VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCE
-authentication                                       False	     True          False	  76s
-cloud-credential                           4.3.0     True        False         False	  11m
-cluster-autoscaler                         4.3.0     True        False         False	  107s
-console                                    4.3.0     False	     True          False	  2m5s
-dns                                        4.3.0     True        False         False	  5m22s
-image-registry                             4.3.0     True        False         False	  2m30s
-ingress                                    4.3.0     True        False         False	  119s
-insights                                   4.3.0     True        False         False	  6m59s
-kube-apiserver                             4.3.0     True        True          True	  4m27s
-kube-controller-manager                    4.3.0     True        True          False	  4m25s
-kube-scheduler                             4.3.0     True        True          False	  4m20s
-machine-api                                4.3.0     True        False         False	  5m59s
-machine-config                             4.3.0     True        False         False	  4m26s
-marketplace                                4.3.0     True        False         False	  106s
-monitoring                                           Unknown     True          Unknown    2m29s
-network                                    4.3.0     True        False         False	  7m12s
-node-tuning                                4.3.0     True        False         False	  3m2s
-openshift-apiserver                        4.3.0     True        False         False	  2m54s
-openshift-controller-manager               4.3.0     True        False         False	  4m36s
-openshift-samples                          4.3.0     True        False         False	  88s
-operator-lifecycle-manager                 4.3.0     True        False         False	  5m59s
-operator-lifecycle-manager-catalog         4.3.0     True        False         False	  5m59s
-operator-lifecycle-manager-packageserver   4.3.0     True        False         False	  3m23s
-service-ca                                 4.3.0     True        False         False	  6m52s
-service-catalog-apiserver                  4.3.0     True        False         False	  3m13s
-service-catalog-controller-manager         4.3.0     True        False         False	  3m17s
-storage                                    4.3.0     True        False         False	  2m29s
+
 ----
 
 ----
@@ -666,23 +639,23 @@ cat install_dir/auth/kubeadmin-password
 
 ----
 On your local machine, add
-console-openshift-console.apps.ocp43.local and
+console-openshift-console.apps.ocp44.local and
 oauth-openshift.apps.ocp43.local
 to /etc/hosts, pointing to 127.0.0.1
 ----
 
 ----
-sudo ssh root@<your KVM host> -L 443:console-openshift-console.apps.ocp43.local:443
+sudo ssh root@<your KVM host> -L 443:console-openshift-console.apps.ocp44.local:443
 ----
 
 ----
-You can now connect to https://console-openshift-console.apps.ocp43.local
+You can now connect to https://console-openshift-console.apps.ocp44.local
 as kubeadmin
 with the password you got from install_dir/auth/kubeadmin-password.
 ----
 
 
-image:images/ocp43_upi.png[title="OCP 4.3 dashboard"] 
+
 
 
 == SDN packet flow
