@@ -328,6 +328,7 @@ do
   echo "$IP master-${i}.${CLUSTER_NAME}.${BASE_DOM}" \
   "etcd-$((i-1)).${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
   echo "srv-host=_etcd-server-ssl._tcp.${CLUSTER_NAME}.${BASE_DOM},etcd-$((i-1)).${CLUSTER_NAME}.${BASE_DOM},2380,0,10" >> ${DNS_DIR}/${CLUSTER_NAME}.conf
+  echo "$IP master-${i}.${CLUSTER_NAME}.${BASE_DOM}" >> /etc/hosts
 done
 ----
 
