@@ -399,6 +399,20 @@ echo "$LBIP lb.${CLUSTER_NAME}.${BASE_DOM}" \
 
 
 ----
+cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.122.94 bootstrap.ocp44.local
+192.168.122.224 master-1.ocp44.local etcd-0.ocp44.local
+192.168.122.37 master-2.ocp44.local etcd-1.ocp44.local
+192.168.122.214 master-3.ocp44.local etcd-2.ocp44.local
+192.168.122.46 master-4.ocp44.local etcd-3.ocp44.local
+192.168.122.89 master-5.ocp44.local etcd-4.ocp44.local
+192.168.122.153 master-6.ocp44.local etcd-5.ocp44.local
+192.168.122.47 lb.ocp44.local api.ocp44.local api-int.ocp44.local
+----
+
+----
 echo "address=/apps.${CLUSTER_NAME}.${BASE_DOM}/${LBIP}" >> ${DNS_DIR}/${CLUSTER_NAME}.conf
 ----
 
