@@ -296,6 +296,29 @@ done
 ----
 
 ----
+for x in lb bootstrap master-1 master-2 master-3 master-4 master-5 master-6
+  do
+    virsh start ${CLUSTER_NAME}-$x
+  done
+Domain ocp44-lb started
+
+Domain ocp44-bootstrap started
+
+Domain ocp44-master-1 started
+
+Domain ocp44-master-2 started
+
+Domain ocp44-master-3 started
+
+Domain ocp44-master-4 started
+
+Domain ocp44-master-5 started
+
+Domain ocp44-master-6 started
+----
+
+
+----
 virsh list --all
 ----
 
