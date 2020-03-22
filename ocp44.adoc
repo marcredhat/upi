@@ -430,7 +430,8 @@ srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-2.ocp44.local,2380,0,10
 srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-3.ocp44.local,2380,0,10
 srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-4.ocp44.local,2380,0,10
 srv-host=_etcd-server-ssl._tcp.ocp44.local,etcd-5.ocp44.local,2380,0,10
-address=/apps.ocp44.local/192.168.122.205
+address=/apps.ocp44.local/192.168.122.47
+server=/ocp44.local/192.168.122.47
 ----
 
 
