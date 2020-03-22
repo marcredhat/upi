@@ -334,6 +334,40 @@ do
 done
 ----
 
+
+----
+for x in lb bootstrap master-1 master-2 master-3 master-4 master-5 master-6
+> do
+>   virsh --connect qemu:///system reboot  "${CLUSTER_NAME}-$x"
+>   echo `virsh domifaddr "${CLUSTER_NAME}-$x"`
+> done
+Domain ocp44-lb is being rebooted
+
+Name MAC address Protocol Address ------------------------------------------------------------------------------- vnet0 52:54:00:01:03:0f ipv4 192.168.122.47/24
+Domain ocp44-bootstrap is being rebooted
+
+Name MAC address Protocol Address ------------------------------------------------------------------------------- vnet1 52:54:00:72:55:b2 ipv4 192.168.122.94/24
+Domain ocp44-master-1 is being rebooted
+
+Name MAC address Protocol Address ------------------------------------------------------------------------------- vnet2 52:54:00:67:b2:9d ipv4 192.168.122.224/24
+Domain ocp44-master-2 is being rebooted
+
+Name MAC address Protocol Address ------------------------------------------------------------------------------- vnet3 52:54:00:56:e4:89 ipv4 192.168.122.37/24
+Domain ocp44-master-3 is being rebooted
+
+Name MAC address Protocol Address ------------------------------------------------------------------------------- vnet4 52:54:00:21:4d:38 ipv4 192.168.122.214/24
+Domain ocp44-master-4 is being rebooted
+
+Name MAC address Protocol Address ------------------------------------------------------------------------------- vnet5 52:54:00:88:7a:3e ipv4 192.168.122.46/24
+Domain ocp44-master-5 is being rebooted
+
+Name MAC address Protocol Address ------------------------------------------------------------------------------- vnet6 52:54:00:f2:f5:64 ipv4 192.168.122.89/24
+Domain ocp44-master-6 is being rebooted
+
+Name MAC address Protocol Address ------------------------------------------------------------------------------- vnet7 52:54:00:14:c9:e4 ipv4 192.168.122.153/24
+
+----
+
 ----
 IP=$(virsh domifaddr "${CLUSTER_NAME}-bootstrap" | grep ipv4 | head -n1 | awk '{print $4}' | cut -d'/' -f1)
 MAC=$(virsh domifaddr "${CLUSTER_NAME}-bootstrap" | grep ipv4 | head -n1 | awk '{print $2}')
