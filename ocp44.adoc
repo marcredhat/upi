@@ -548,6 +548,16 @@ systemctl reload NetworkManager
 systemctl restart libvirtd
 ----
 
+
+----
+for x in lb bootstrap master-1 master-2 master-3 master-4 master-5 master-6
+do
+  virsh --connect qemu:///system reboot  "${CLUSTER_NAME}-$x"
+  echo `virsh domifaddr "${CLUSTER_NAME}-$x"`
+done
+----
+
+
 ----
 ping -c 1 master-1.ocp44.local
 ping -c 1 master-2.ocp44.local
