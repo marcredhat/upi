@@ -282,12 +282,12 @@ done
 virsh list --all
  Id    Name                           State
 ----------------------------------------------------
- 2     ocp43-master-1                 running
- 3     ocp43-master-2                 running
- 4     ocp43-master-3                 running
- 5     ocp43-worker-1                 running
- 6     ocp43-worker-2                 running
- -     ocp43-bootstrap                shut off
+ 2     ocp44-master-1                 running
+ 3     ocp44-master-2                 running
+ 4     ocp44-master-3                 running
+ 5     ocp44-worker-1                 running
+ 6     ocp44-worker-2                 running
+ -     ocp44-bootstrap                shut off
 ----
 
 ----
