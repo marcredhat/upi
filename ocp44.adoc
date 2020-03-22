@@ -622,6 +622,12 @@ worker-1.ocp44.local   Ready    worker          9m20s   v1.16.2
 worker-2.ocp44.local   Ready    worker          9m21s   v1.16.2
 ----
 
+
+----
+./oc get csr -o name | xargs oc adm certificate approve
+----
+
+
 ----
 ./oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
 ----
