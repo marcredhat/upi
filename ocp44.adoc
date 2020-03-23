@@ -532,6 +532,7 @@ ssh lb.${CLUSTER_NAME}.${BASE_DOM} dnf -y  install net-tools
 
 
 ----
+ssh lb.${CLUSTER_NAME}.${BASE_DOM} systemctl start haproxy
 ssh lb.${CLUSTER_NAME}.${BASE_DOM} systemctl status haproxy
 ----
 
@@ -607,6 +608,12 @@ dig _etcd-server-ssl._tcp.ocp44.local SRV +short
 0 10 2380 etcd-3.ocp44.local.
 0 10 2380 etcd-4.ocp44.local.
 0 10 2380 etcd-5.ocp44.local.
+----
+
+
+----
+ssh lb.${CLUSTER_NAME}.${BASE_DOM} systemctl start haproxy
+ssh lb.${CLUSTER_NAME}.${BASE_DOM} systemctl status haproxy
 ----
 
 
