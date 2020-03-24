@@ -727,7 +727,7 @@ image:images/pagerduty1.png[title="pagerduty1"]
 
 
 
-image:images/console.png[title="alertmanager"]
+image:images/alertmanager.png[title="alertmanager"]
 
 
 image:images/pagerduty2.png[title="pagerduty2"]
