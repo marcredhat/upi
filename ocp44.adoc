@@ -782,6 +782,11 @@ with the password you got from install_dir/auth/kubeadmin-password.
 ----
 
 
+----
+You can also connect to the console as the user configured in the "Create user / authentication using htpasswd" paragraph
+----
+
+
 image:images/console.png[title="console"]
 
 
