@@ -9,6 +9,9 @@ https://kxr.me/2019/08/17/openshift-4-upi-install-libvirt-kvm/
 ----
 
 
+image:images/console.png[title="console"]
+
+
 ----
 cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.2 Beta
@@ -720,6 +723,11 @@ https://blog.openshift.com/openshift-4-3-alertmanager-configuration/
 ----
 
 
+image:images/console.png[title="pagerduty1"]
+
+image:images/console.png[title="pagerduty2"]
+
+
 ----
 ./oc get nodes
 master-1.ocp44.local   Ready    master,worker   9m26s   v1.16.2
@@ -769,7 +777,7 @@ with the password you got from install_dir/auth/kubeadmin-password.
 ----
 
 
-
+image:images/console.png[title="console"]
 
 
 == SDN packet flow
