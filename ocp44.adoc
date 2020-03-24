@@ -620,6 +620,39 @@ ssh lb.${CLUSTER_NAME}.${BASE_DOM} systemctl status haproxy
 ----
 
 
+
+
+----
+./openshift-install --dir=install_dir wait-for bootstrap-complete
+----
+
+----
+ssh core@bootstrap.ocp44.local journalctl -b -f -u bootkube.service
+----
+
+----
+You'll see journal entries like
+
+9_openshift-machineconfig_99-master-ssh.yaml": unable to get REST mapping for "99_openshift-machineconfig_99-master-ssh.yaml": no matches for kind "MachineConfig" in version "machineconfiguration.openshift.io/v1
+
+These messages go away as soon as CRD definition is  created (by machine-config operator).
+----
+
+----
+./openshift-install --dir=install_dir wait-for bootstrap-complete
+INFO Waiting up to 30m0s for the Kubernetes API at https://api.ocp43.local:6443...
+INFO API v1.16.2 up
+INFO Waiting up to 30m0s for bootstrapping to complete...
+INFO It is now safe to remove the bootstrap resources
+----
+
+----
+cd ocp4
+export KUBECONFIG=install_dir/auth/kubeconfig
+cp ./oc /usr/bin
+----
+
+
 ----
 BASE_DOMAIN="$(oc get dns.config/cluster -o 'jsonpath={.spec.baseDomain}')"
 
@@ -661,36 +694,6 @@ apps.ocp44.local
 
 
 ----
-
-----
-./openshift-install --dir=install_dir wait-for bootstrap-complete
-----
-
-----
-ssh core@bootstrap.ocp44.local journalctl -b -f -u bootkube.service
-----
-
-----
-You'll see journal entries like
-
-9_openshift-machineconfig_99-master-ssh.yaml": unable to get REST mapping for "99_openshift-machineconfig_99-master-ssh.yaml": no matches for kind "MachineConfig" in version "machineconfiguration.openshift.io/v1
-
-These messages go away as soon as CRD definition is  created (by machine-config operator).
-----
-
-----
-./openshift-install --dir=install_dir wait-for bootstrap-complete
-INFO Waiting up to 30m0s for the Kubernetes API at https://api.ocp43.local:6443...
-INFO API v1.16.2 up
-INFO Waiting up to 30m0s for bootstrapping to complete...
-INFO It is now safe to remove the bootstrap resources
-----
-
-----
-cd ocp4
-export KUBECONFIG=install_dir/auth/kubeconfig
-----
-
 ----
 ./oc get nodes
 master-1.ocp44.local   Ready    master,worker   9m26s   v1.16.2
