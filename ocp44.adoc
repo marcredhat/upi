@@ -711,6 +711,15 @@ Follow the steps at
 https://github.com/marcredhat/workshop/blob/master/userauth_htpasswd.adoc
 ----
 
+
+== Configure AlertManager
+
+----
+Follow the steps at 
+https://blog.openshift.com/openshift-4-3-alertmanager-configuration/
+----
+
+
 ----
 ./oc get nodes
 master-1.ocp44.local   Ready    master,worker   9m26s   v1.16.2
