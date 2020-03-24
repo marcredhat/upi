@@ -441,6 +441,9 @@ ssh lb.${CLUSTER_NAME}.${BASE_DOM} <<EOF
 # Allow haproxy to listen on custom ports
 semanage port -a -t http_port_t -p tcp 6443
 semanage port -a -t http_port_t -p tcp 22623
+semanage port -a -t http_port_t -p tcp 443
+semanage port -a -t http_port_t -p tcp 80
+semanage port -a -t http_port_t -p tcp 8443
 
 echo '
 global
