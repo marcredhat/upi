@@ -694,6 +694,23 @@ apps.ocp44.local
 
 
 ----
+
+
+== Create image registry
+
+----
+Follow the steps at 
+https://github.com/marcredhat/workshop/blob/master/imageregistry.adoc
+----
+
+
+== Create user / authentication using htpasswd
+
+----
+Follow the steps at 
+https://github.com/marcredhat/workshop/blob/master/userauth_htpasswd.adoc
+----
+
 ----
 ./oc get nodes
 master-1.ocp44.local   Ready    master,worker   9m26s   v1.16.2
