@@ -257,7 +257,7 @@ virt-install --name ${CLUSTER_NAME}-bootstrap \
 for i in {1..6}
 do
 virt-install --name ${CLUSTER_NAME}-master-${i} \
---disk size=50 --ram 16000 --cpu host --vcpus 4 \
+--disk size=50 --ram 24000 --cpu host --vcpus 4 \
 --os-type linux --os-variant rhel7.0 \
 --network network=${VIR_NET} --noreboot --noautoconsole \
 --location rhcos-install/ \
