@@ -55,7 +55,7 @@ sysctl --load /etc/sysctl.d/70-ipv6.conf
 
 ----
 dnf -y update  && dnf -y upgrade
-dnf -y install libvirt*  bind-utils wget tar python3  virt-install virt-viewer libguestfs-tools-c tmux httpd-tools
+dnf -y install libvirt*  bind-utils wget tar python3  virt-install virt-viewer libguestfs-tools-c tmux httpd-tools git
 systemctl start libvirtd.service
 systemctl enable libvirtd
 ----
