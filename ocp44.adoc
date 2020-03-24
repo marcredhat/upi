@@ -723,9 +723,9 @@ https://blog.openshift.com/openshift-4-3-alertmanager-configuration/
 ----
 
 
-image:images/console.png[title="pagerduty1"]
+image:images/pagerduty1.png[title="pagerduty1"]
 
-image:images/console.png[title="pagerduty2"]
+image:images/pagerduty2.png[title="pagerduty2"]
 
 
 ----
