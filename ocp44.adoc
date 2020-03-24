@@ -246,7 +246,7 @@ iptables -I INPUT -p tcp -m tcp --dport ${WEB_PORT} -s ${HOST_NET} -j ACCEPT
 
 ----
 virt-install --name ${CLUSTER_NAME}-bootstrap \
-  --disk size=50 --ram 32000 --cpu host --vcpus 4 \
+  --disk size=50 --ram 24000 --cpu host --vcpus 4 \
   --os-type linux --os-variant rhel7.0 \
   --network network=${VIR_NET} --noreboot --noautoconsole \
   --location rhcos-install/ \
@@ -280,7 +280,7 @@ virt-customize -a /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2 \
 
 ----
 virt-install --import --name ${CLUSTER_NAME}-lb \
-  --disk /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2 --memory 8192 --cpu host --vcpus 2 \
+  --disk /var/lib/libvirt/images/${CLUSTER_NAME}-lb.qcow2 --memory 24000 --cpu host --vcpus 2 \
   --network network=${VIR_NET} --noreboot --noautoconsole
 ----
 
