@@ -686,10 +686,10 @@ apps.ocp44.local
 3. Configure the certificate as the ingresscontroller's default certificate:
 
     oc -n openshift-ingress create secret tls marc-custom-default-cert --cert=marc-example.crt --key=marc-example.key
-    oc -n openshift-ingress-operator patch ingresscontrollers/default --type=merge --patch='{"spec":{"defaultCertificate":{"name":"custom-default-cert"}}}'
+    oc -n openshift-ingress-operator patch ingresscontrollers/default --type=merge --patch='{"spec":{"defaultCertificate":{"name":"marc-custom-default-cert"}}}'
 
-    oc -n openshift-config create configmap custom-ca --from-file=ca-bundle.crt=marc-example-ca.crt
-        oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"custom-ca"}}}'
+    oc -n openshift-config create configmap marc-custom-ca --from-file=ca-bundle.crt=marc-example-ca.crt
+        oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"marc-custom-ca"}}}'
 
 
   oc -n openshift-config create configmap custom-ca --from-file=ca-bundle.crt=marc-example-ca.crt
