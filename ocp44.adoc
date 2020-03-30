@@ -799,18 +799,23 @@ Let's deploy a DaemonSet so that we get a container running on each worker node.
 
 
 ----
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: tcpdump
+  labels:
+       marc: tcpdump
 spec:
+  selector:
+     matchLabels:
+       marc: tcpdump
   template:
     metadata:
       labels:
         marc: tcpdump
     spec:
       nodeSelector:
-        marc: tcpdump-node
+        marc: tcpdumpnode
       containers:
         - name: tcpdump
           image: corfr/tcpdump
@@ -821,8 +826,22 @@ spec:
 
 
 ----
-oc label node worker-1.ocp43.local marc=tcpdump-node
-oc label node worker-2.ocp43.local marc=tcpdump-node
+oc label node master-1.ocp44.local marc=tcpdumpnode
+oc label node master-2.ocp44.local marc=tcpdumpnode
+oc label node master-3.ocp44.local marc=tcpdumpnode
+oc label node master-4.ocp44.local marc=tcpdumpnode
+oc label node master-5.ocp44.local marc=tcpdumpnode
+oc label node master-6.ocp44.local marc=tcpdumpnode
+----
+
+----
+oc get pods --all-namespaces | grep tcpdump
+ovntests                                                tcpdump-2qnl6                                                     1/1     Running     0          8s
+ovntests                                                tcpdump-7b8mn                                                     1/1     Running     0          9s
+ovntests                                                tcpdump-98hch                                                     1/1     Running     0          8s
+ovntests                                                tcpdump-flcv6                                                     1/1     Running     0          9s
+ovntests                                                tcpdump-frvjm                                                     1/1     Running     0          9s
+ovntests                                                tcpdump-xwjgp                                                     1/1     Running     0          9s
 ----
 
 ----
