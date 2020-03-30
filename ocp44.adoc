@@ -834,15 +834,54 @@ oc label node master-5.ocp44.local marc=tcpdumpnode
 oc label node master-6.ocp44.local marc=tcpdumpnode
 ----
 
+
+
+oc get pods -o wide --all-namespaces | grep tcpdump
+ovntests                                                tcpdump-2qnl6                                                     1/1     Running     0          14m     10.130.0.46       master-6.ocp44.local   <none>           <none>
+ovntests                                                tcpdump-7b8mn                                                     1/1     Running     0          14m     10.131.0.45       master-1.ocp44.local   <none>           <none>
+ovntests                                                tcpdump-98hch                                                     1/1     Running     0          14m     10.128.0.62       master-5.ocp44.local   <none>           <none>
+ovntests                                                tcpdump-flcv6                                                     1/1     Running     0          14m     10.129.2.63       master-4.ocp44.local   <none>           <none>
+ovntests                                                tcpdump-frvjm                                                     1/1     Running     0          14m     10.129.0.70       master-2.ocp44.local   <none>           <none>
+ovntests                                                tcpdump-xwjgp                                                     1/1     Running     0          14m     10.128.2.28       master-3.ocp44.local   <none>           <none>
+
 ----
-oc get pods --all-namespaces | grep tcpdump
-ovntests                                                tcpdump-2qnl6                                                     1/1     Running     0          8s
-ovntests                                                tcpdump-7b8mn                                                     1/1     Running     0          9s
-ovntests                                                tcpdump-98hch                                                     1/1     Running     0          8s
-ovntests                                                tcpdump-flcv6                                                     1/1     Running     0          9s
-ovntests                                                tcpdump-frvjm                                                     1/1     Running     0          9s
-ovntests                                                tcpdump-xwjgp                                                     1/1     Running     0          9s
+oc rsh tcpdump-2qnl6
+while true ; do  echo -e "HTTP/1.1 200 OK\n\n $(date)" | nc -l -p 3306  ; done
 ----
+
+----
+oc rsh tcpdump-7b8mn
+wget 10.130.0.46:3306
+----
+
+----
+oc new-app https://github.com/IBM/deploy-python-openshift-tutorial
+oc rsh deploy-python-openshift-tutorial-1-kgf9h
+wget 10.130.0.46:3306
+----
+
+
+----
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow3306
+spec:
+ podSelector:
+   matchLabels:
+     marc:  tcpdump
+ ingress:
+ - from:
+   - podSelector:
+       matchLabels:
+         marc: tcpdump
+   ports:
+   - protocol: TCP
+     port: 3306
+----
+
+
+
 
 ----
 In my case, the IP address seen from inside each container are 10.128.2.17 and 10.129.0.17
