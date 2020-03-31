@@ -797,7 +797,6 @@ image:images/console.png[title="console"]
 Let's deploy a DaemonSet so that we get a container running on each worker node.
 ---- 
 
-
 ----
 apiVersion: apps/v1
 kind: DaemonSet
@@ -819,6 +818,8 @@ spec:
       containers:
         - name: tcpdump
           image: corfr/tcpdump
+          securityContext:
+          privileged: true
           command:
           - bin/sleep
           - infinity
