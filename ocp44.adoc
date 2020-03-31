@@ -798,6 +798,11 @@ Let's deploy a DaemonSet so that we get a container running on each worker node.
 ---- 
 
 ----
+oc create sa samarc
+oc adm policy add-scc-to-user privileged -z samarc
+----
+
+----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -819,10 +824,14 @@ spec:
         - name: tcpdump
           image: corfr/tcpdump
           securityContext:
-          privileged: true
+             #runAsUser: 0
+             allowPrivilegeEscalation: true
+             privileged: true
           command:
           - bin/sleep
           - infinity
+      serviceAccount: samarc
+      serviceAccountName: samarc
 ----
 
 
