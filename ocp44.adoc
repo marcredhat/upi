@@ -872,6 +872,10 @@ oc rsh deploy-python-openshift-tutorial-1-kgf9h
 wget 10.130.0.46:3306
 ----
 
+----
+oc rsh ovnkube-node-md96m
+ovn-nbctl set-connection ptcp:6641
+----
 
 ----
 kind: NetworkPolicy
