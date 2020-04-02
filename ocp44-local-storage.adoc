@@ -69,3 +69,15 @@ spec:
 ----
 for pv in $(oc get pv|awk '{print $1}' | grep pv | grep -v NAME); do oc patch pv $pv --patch "$(cat patchcapacity.yaml)"; done 
 ----
+
+
+----
+Issues with PVC stuck at "Terminating"
+Solved as follows:
+kubectl patch pvc local-pvc-name -p '{"metadata":{"finalizers":null}}'
+kubectl patch pv local-pv-c8bb60de -p '{"metadata":{"finalizers":null}}'
+
+By default, the finalizer value is set to 'protect' which will block the deletion.
+More about finalizers here :
+https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/#finalizer
+----
