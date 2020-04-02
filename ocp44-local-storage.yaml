@@ -1,0 +1,59 @@
+
+
+----
+oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:openshift-operators:local-storage-admin
+----
+
+
+----
+Ensure that /mnt/local-storage/<your storage class name>
+exists on your nodes.
+
+In my case,
+ssh core@master-x.ocp44.local
+cd /mnt/local-storage
+sudo mkdir marcsc
+----
+
+----
+apiVersion: v1
+items:
+- apiVersion: local.storage.openshift.io/v1
+  kind: LocalVolume
+  metadata:
+    creationTimestamp: "2020-04-01T23:34:15Z"
+    finalizers:
+    - storage.openshift.com/local-volume-protection
+    generation: 3
+    name: example2
+    namespace: openshift-operators
+    resourceVersion: "3705475"
+    selfLink: /apis/local.storage.openshift.io/v1/namespaces/openshift-operators/localvolumes/example2
+    uid: e397bdb3-1e02-44da-8ba1-9804acfc82ec
+  spec:
+    logLevel: Normal
+    managementState: Managed
+    storageClassDevices:
+    - devicePaths:
+      - /dev/vda
+      - /dev/vda3
+      fsType: ext4
+      storageClassName: marcsc
+      volumeMode: Filesystem
+----
+
+----
+Create a PVC using your storage class name
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: local-pvc-name
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: marcsc
+----
