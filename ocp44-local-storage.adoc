@@ -57,3 +57,7 @@ spec:
       storage: 100Gi
   storageClassName: marcsc
 ----
+
+----
+for pv in $(oc get pv|awk '{print $1}' | grep pv | grep -v NAME); do oc patch pv $pv --patch "$(cat patchcapacity.yaml)"; done 
+----
