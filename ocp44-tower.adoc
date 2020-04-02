@@ -1,0 +1,69 @@
+
+
+----
+cat tower.yaml
+apiVersion: tower.ansible.com/v1alpha1
+kind: Tower
+metadata:
+  name: tower
+  namespace: tower
+spec:
+  tower_hostname: tower
+  tower_secret_key: <>
+
+  tower_admin_user: <>
+  tower_admin_email: <>
+  tower_admin_password: <>
+----
+
+
+----
+oc create sa tower-operator
+----
+
+----
+oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:tower:tower-operator
+----
+
+
+----
+cat postgrespvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: "2020-04-02T03:35:36Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    app: tower-postgres
+  name: postgres-tower-postgres-0
+  namespace: tower
+  resourceVersion: "3723885"
+  selfLink: /api/v1/namespaces/tower/persistentvolumeclaims/postgres-tower-postgres-0
+  uid: 2a33a7d6-d1d1-4b9e-8791-2f66eaae2d68
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  volumeMode: Filesystem
+  storageClassName: marcsc
+  ----
+
+
+----
+oc get pvc
+NAME                        STATUS   VOLUME              CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+postgres-tower-postgres-0   Bound    local-pv-5aad7cf9   100Gi      RWO            marcsc         80s
+----
+
+----
+oc logs tower-postgres-0
+chmod: changing permissions of '/var/lib/postgresql/data': Operation not permitted
+----
+
+----
+oc adm policy add-scc-to-user anyuid -z default
+securitycontextconstraints.security.openshift.io/anyuid added to: ["system:serviceaccount:tower:default"]
+----
