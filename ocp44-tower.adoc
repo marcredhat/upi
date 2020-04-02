@@ -46,7 +46,7 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 8Gi
+      storage: 1000Gi
   volumeMode: Filesystem
   storageClassName: marcsc
 ----
@@ -55,7 +55,7 @@ spec:
 ----
 oc get pvc
 NAME                        STATUS   VOLUME              CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-postgres-tower-postgres-0   Bound    local-pv-5aad7cf9   100Gi      RWO            marcsc         80s
+postgres-tower-postgres-0   Bound    local-pv-5aad7cf9   1000Gi      RWO            marcsc         80s
 ----
 
 ----
