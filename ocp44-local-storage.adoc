@@ -1,4 +1,6 @@
-
+----
+Deploy LocalStorage Operator in namespace "localstorage"
+----
 
 ----
 oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:localstorage:local-storage-admin
@@ -16,28 +18,33 @@ sudo mkdir marcsc
 ----
 
 ----
+[core@master-1 ~]$ df -Th
+Filesystem                           Type      Size  Used Avail Use% Mounted on
+devtmpfs                             devtmpfs  7.7G     0  7.7G   0% /dev
+tmpfs                                tmpfs     7.7G   84K  7.7G   1% /dev/shm
+tmpfs                                tmpfs     7.7G   13M  7.7G   1% /run
+tmpfs                                tmpfs     7.7G     0  7.7G   0% /sys/fs/cgroup
+/dev/mapper/coreos-luks-root-nocrypt xfs        50G   15G   35G  30% /sysroot
+/dev/vda1                            ext4      364M  159M  182M  47% /boot
+/dev/vda2                            vfat      127M  6.8M  121M   6% /boot/efi
+tmpfs                                tmpfs     1.6G  4.0K  1.6G   1% /run/user/1000
+----
+
+
+----
 apiVersion: local.storage.openshift.io/v1
 kind: LocalVolume
 items:
 - apiVersion: local.storage.openshift.io/v1
   kind: LocalVolume
   metadata:
-    creationTimestamp: "2020-04-01T23:34:15Z"
-    finalizers:
-    - storage.openshift.com/local-volume-protection
-    generation: 3
     name: example2
-    namespace: localstorage
-    resourceVersion: "3705475"
-    selfLink: /apis/local.storage.openshift.io/v1/namespaces/openshift-operators/localvolumes/example2
-    uid: e397bdb3-1e02-44da-8ba1-9804acfc82ec
   spec:
     logLevel: Normal
     managementState: Managed
     storageClassDevices:
     - devicePaths:
-      - /dev/vda
-      - /dev/vda4
+      - /dev/vda1
       fsType: ext4
       storageClassName: marcsc
       volumeMode: Filesystem
