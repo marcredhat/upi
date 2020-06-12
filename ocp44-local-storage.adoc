@@ -43,6 +43,13 @@ items:
       volumeMode: Filesystem
 ----
 
+
+----
+oc patch ds example2-local-diskmaker -n localstorage -p '{"spec": {"template": {"spec": {"tolerations":[{"operator": "Exists"}]}}}}'
+----
+
+
+
 ----
 Create a PVC using your storage class name
 kind: PersistentVolumeClaim
