@@ -12,9 +12,11 @@ Ensure that /mnt/local-storage/<your storage class name>
 exists on your nodes.
 
 In my case,
-ssh core@master-x.ocp44.local
-cd /mnt/local-storage
-sudo mkdir marcsc
+ssh -i /root/ocp4_setup_ocp4/sshkey core@master-1.ocp4.local
+cd /mnt
+sudo mkdir local-storage
+cd local-storage
+sudo mkdir marcsc 
 ----
 
 ----
