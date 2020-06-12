@@ -27,7 +27,7 @@ items:
     - storage.openshift.com/local-volume-protection
     generation: 3
     name: example2
-    namespace: openshift-operators
+    namespace: localstorage
     resourceVersion: "3705475"
     selfLink: /apis/local.storage.openshift.io/v1/namespaces/openshift-operators/localvolumes/example2
     uid: e397bdb3-1e02-44da-8ba1-9804acfc82ec
