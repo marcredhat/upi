@@ -800,6 +800,7 @@ Let's deploy a DaemonSet so that we get a container running on each worker node.
 ----
 oc create sa samarc
 oc adm policy add-scc-to-user privileged -z samarc
+oc adm policy add-scc-to-user anyuid -z default -n `oc project -q` --as=system:admin
 ----
 
 ----
