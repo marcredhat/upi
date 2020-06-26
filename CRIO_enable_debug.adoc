@@ -1,0 +1,88 @@
+
+----
+https://www.redhat.com/en/blog/red-hat-openshift-container-platform-4-now-defaults-cri-o-underlying-container-engine
+https://access.redhat.com/solutions/4717701
+----
+
+
+----
+vi ContainerRuntimeConfig.yaml
+
+
+apiVersion: machineconfiguration.openshift.io/v1
+kind: ContainerRuntimeConfig
+metadata:
+ name: set-log-and-pid
+spec:
+ machineConfigPoolSelector:
+   matchLabels:
+     debug-crio: config-log-and-pid
+ containerRuntimeConfig:
+   #pidsLimit: 2048
+   logLevel: debug
+----
+
+----
+oc create -f ContainerRuntimeConfig.yaml
+containerruntimeconfig.machineconfiguration.openshift.io/set-log-and-pid created
+----
+
+
+----
+oc get MachineConfigPool
+NAME     CONFIG                                             UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
+master   rendered-master-be1b1476aa23cfa87f48bf9b03e97424   True      False      False      3              3                   3                     0                      3d10h
+worker   rendered-worker-9440a21a9ccb92fd88b789a6c6d4d428   True      False      False      2              2                   2                     0                      3d10h
+----
+
+
+----
+oc edit MachineConfigPool worker
+----
+
+
+----
+.....
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  creationTimestamp: "2020-06-23T07:18:27Z"
+  generation: 2
+  labels:
+    debug-crio: config-log-and-pid
+    machineconfiguration.openshift.io/mco-built-in: ""
+  name: worker
+....
+----
+
+----
+oc get MachineConfig
+NAME                                                              GENERATEDBYCONTROLLER                      IGNITIONVERSION   AGE
+....
+rendered-master-be1b1476aa23cfa87f48bf9b03e97424                  dba41ab9e1fa73b14ef3e8c500d83d98527db998   2.2.0             3d10h
+rendered-worker-1db35519e3759bcc0ea954110c95ead9                  dba41ab9e1fa73b14ef3e8c500d83d98527db998   2.2.0             78s
+rendered-worker-9440a21a9ccb92fd88b789a6c6d4d428                  dba41ab9e1fa73b14ef3e8c500d83d98527db998   2.2.0             3d10h
+....
+----
+
+
+----
+oc debug node/worker-1.ocp4.local -- cat /host/etc/crio/crio.conf
+
+oc debug node/worker-1.ocp4.local -- cat /host/etc/crio/crio.conf | grep debug
+Starting pod/worker-1ocp4local-debug ...
+To use host binaries, run `chroot /host`
+    log_level = "debug"
+
+Removing debug pod ...
+----
+
+
+----
+ssh -i /root/ocp4_setup_ocp4/sshkey core@worker-1.ocp4.local
+----
+
+
+----
+[core@worker-1 ~]$ sudo journalctl -u crio
+----
