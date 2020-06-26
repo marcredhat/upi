@@ -23,7 +23,12 @@ worker-2.ocp4.local   Ready    worker          3d10h   v1.17.1+3f6f40d
 
 
 ----
-vi ContainerRuntimeConfig.yaml
+Create a ContainerRuntimeConfig with logLevel set to "debug" as shown below
+Note the matchLabels. In a later step, we are going to apply this label to the MachineConfigPool for the worker nodes.
+----
+
+----
+vi ContainerRuntimeConfig.yaml 
 
 
 apiVersion: machineconfiguration.openshift.io/v1
@@ -54,6 +59,11 @@ worker   rendered-worker-9440a21a9ccb92fd88b789a6c6d4d428   True      False     
 
 
 ----
+Apply the label to the MachineConfigPool for worker nodes
+----
+
+
+----
 oc edit MachineConfigPool worker
 ----
 
@@ -72,6 +82,11 @@ metadata:
 ....
 ----
 
+
+----
+Check "age" below to ensure that a new MachineConfig is created
+----
+
 ----
 oc get MachineConfig
 NAME                                                              GENERATEDBYCONTROLLER                      IGNITIONVERSION   AGE
@@ -80,6 +95,11 @@ rendered-master-be1b1476aa23cfa87f48bf9b03e97424                  dba41ab9e1fa73
 rendered-worker-1db35519e3759bcc0ea954110c95ead9                  dba41ab9e1fa73b14ef3e8c500d83d98527db998   2.2.0             78s
 rendered-worker-9440a21a9ccb92fd88b789a6c6d4d428                  dba41ab9e1fa73b14ef3e8c500d83d98527db998   2.2.0             3d10h
 ....
+----
+
+
+----
+Check that log level "debug" is now enabled
 ----
 
 
@@ -94,6 +114,9 @@ To use host binaries, run `chroot /host`
 Removing debug pod ...
 ----
 
+----
+Check CRI-O logs on worker node
+----
 
 ----
 ssh -i /root/ocp4_setup_ocp4/sshkey core@worker-1.ocp4.local
