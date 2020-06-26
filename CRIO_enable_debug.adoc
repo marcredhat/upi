@@ -4,6 +4,23 @@ https://www.redhat.com/en/blog/red-hat-openshift-container-platform-4-now-defaul
 https://access.redhat.com/solutions/4717701
 ----
 
+----
+oc version
+Client Version: 4.4.8
+Server Version: 4.4.8
+Kubernetes Version: v1.17.1+3f6f40d
+----
+
+----
+oc get nodes
+NAME                  STATUS   ROLES           AGE     VERSION
+master-1.ocp4.local   Ready    master,worker   3d10h   v1.17.1+3f6f40d
+master-2.ocp4.local   Ready    master,worker   3d10h   v1.17.1+3f6f40d
+master-3.ocp4.local   Ready    master,worker   3d10h   v1.17.1+3f6f40d
+worker-1.ocp4.local   Ready    worker          3d10h   v1.17.1+3f6f40d
+worker-2.ocp4.local   Ready    worker          3d10h   v1.17.1+3f6f40d
+----
+
 
 ----
 vi ContainerRuntimeConfig.yaml
