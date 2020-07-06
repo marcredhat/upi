@@ -1,4 +1,8 @@
 ----
+See also https://medium.com/swlh/persist-your-openshift-infrastructure-using-ocss-block-file-and-object-storage-1e555c15e2de
+----
+
+----
 Deploy LocalStorage Operator in namespace "localstorage"
 ----
 
