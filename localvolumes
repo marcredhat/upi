@@ -1,16 +1,3 @@
-oc create -f - <<EOF
-apiVersion: local.storage.openshift.io/v1
-kind: LocalVolume
-metadata:
-  name: block
-  namespace: local-storage
-spec:
-  storageClassDevices:
-    - devicePaths:
-        - /dev/vda4
-      storageClassName: localblock
-      volumeMode: Block
----
 apiVersion: local.storage.openshift.io/v1
 kind: LocalVolume
 metadata:
@@ -19,8 +6,8 @@ metadata:
 spec:
   storageClassDevices:
     - devicePaths:
-        - /dev/vda
+        - /dev/vda4
       fsType: ext4
       storageClassName: localfile
       volumeMode: Filesystem
-EOF
+
