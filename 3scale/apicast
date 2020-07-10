@@ -1,0 +1,8 @@
+apiVersion: apps.3scale.net/v1alpha1
+kind: APIcast
+metadata:
+  name: my-echo-apicast
+spec:
+  exposedHost:
+    host: marcredhat-admin.3scale.net
+  embeddedConfigurationSecretRef:
