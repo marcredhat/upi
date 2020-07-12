@@ -42,7 +42,7 @@ firewall-cmd --reload
 ----
 
 
-==3scale
+== 3scale
 
 ----
 1) On the default namespace, create non-dynamic StorageClass
