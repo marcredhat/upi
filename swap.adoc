@@ -1,5 +1,6 @@
 ----
 https://access.redhat.com/solutions/2587
+https://linuxconfig.org/redhat-8-increase-swap-size
 
 Increase vm.min_free_kbytes value, for example to a higher value than a single allocation request.
 Change vm.zone_reclaim_mode to 1 if it's set to zero, so the system can reclaim back memory from cached memory.
@@ -15,7 +16,6 @@ sysctl -a | grep vm.zone_reclaim_mode
 vm.zone_reclaim_mode = 0
 ----
 
-----
 
 ----
 To set a persistent value for a sysctl parameter in Red Hat Enterprise Linux (RHEL) 7 and RHEL 8 which will be applied at boot:
@@ -36,4 +36,10 @@ override any previous persistent sysctl settings in the initial ramdisk image.
 
 Raw
 # dracut -f -v 
+----
+
+
+----
+Increase swap size
+https://linuxconfig.org/redhat-8-increase-swap-size
 ----
