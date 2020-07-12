@@ -1,0 +1,120 @@
+----
+https://access.redhat.com/solutions/4778681
+https://access.redhat.com/solutions/3773891
+----
+
+
+----
+Include insecure option in /etc/exports on NFS server like below:
+
+Raw
+# cat /etc/exports
+/home/export *(rw,sync,no_root_squash,insecure)
+Re-export the share:
+
+Raw
+# exportfs -rav
+----
+
+
+----
+https://www.tecmint.com/install-nfs-server-on-centos-8/
+ vim /etc/yum.conf
+ skip if unavailable = true
+dnf -y install nfs-utils
+systemctl start nfs-server.service
+systemctl enable nfs-server.service
+systemctl status nfs-server.service
+mkdir  -p /mnt/storage
+----
+
+
+----
+[root@dell-r730-001 ~]# exportfs -arv
+exporting 10.1.8.11:/mnt/storage
+----
+
+----
+firewall-cmd --permanent --add-service=nfs
+firewall-cmd --permanent --add-service=rpc-bind
+firewall-cmd --permanent --add-service=mountd
+firewall-cmd --reload
+----
+
+
+==3scale
+
+----
+1) On the default namespace, create non-dynamic StorageClass
+
+Raw
+oc create -f - <<EOF
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: non-dynamic
+provisioner: no-provisioning
+parameters:
+EOF
+----
+
+----
+2) Create a PV that points to an NFS storage and the storageClassName is "non-dynamic:"
+
+Raw
+oc create -f - <<EOF
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv00020
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+  - ReadWriteOnce
+  nfs:
+    path: /mnt/storage
+    server: 10.1.8.11
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: non-dynamic
+EOF
+----
+
+----
+3) Create an APIManager with this configuration
+
+Raw
+apiVersion: apps.3scale.net/v1alpha1
+kind: APIManager
+metadata:
+  name: example-apimanager
+  namespace: 3scale27
+spec:
+  wildcardDomain: apps.example.com
+  system:
+    fileStorage:
+      persistentVolumeClaim:
+        storageClassName: "non-dynamic"
+----
+
+----
+oc patch storageclass thin -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "false"}}}'
+oc patch storageclass non-dynamic -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'
+----
+
+----
+for i in {1..30}
+do
+     oc patch pv pv000$i -p '{"spec":{"claimRef": null}}'
+done
+----
+
+----
+[root@dell-r730-001 ~]# oc get pvc
+NAME                    STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+backend-redis-storage   Bound    pv0005   100Gi      RWO            non-dynamic    51s
+mysql-storage           Bound    pv0006   100Gi      RWO            non-dynamic    51s
+system-redis-storage    Bound    pv0007   100Gi      RWO            non-dynamic    51s
+system-storage          Bound    pv0004   100Gi      RWX            non-dynamic    51s
+----
+
