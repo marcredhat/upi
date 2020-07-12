@@ -1,0 +1,39 @@
+----
+https://access.redhat.com/solutions/2587
+
+Increase vm.min_free_kbytes value, for example to a higher value than a single allocation request.
+Change vm.zone_reclaim_mode to 1 if it's set to zero, so the system can reclaim back memory from cached memory.
+----
+
+----
+sysctl -a | grep vm.min_free_kbytes
+vm.min_free_kbytes = 90112
+----
+
+----
+sysctl -a | grep vm.zone_reclaim_mode
+vm.zone_reclaim_mode = 0
+----
+
+----
+
+----
+To set a persistent value for a sysctl parameter in Red Hat Enterprise Linux (RHEL) 7 and RHEL 8 which will be applied at boot:
+
+Create a new conf file under the /etc/sysctl.d/ directory. File names take the format /etc/sysctl.d/<name>.conf. Files in the /etc/sysctl.d/ directory are parsed in order so it is recommended to prepend the file name with a number signifying the order you would like the files to be parsed in. For example, /etc/sysctl.d/99-custom.conf:
+
+Raw
+# cat /etc/sysctl.d/99-custom.conf
+vm.zone_reclaim_mode=1
+vm.min_free_kbytes=900000
+
+To have the system immediately apply the values in a new/updated /etc/sysctl.d file, run sysctl -p <filename>:
+
+Raw
+# sysctl -p /etc/sysctl.d/99-custom.conf
+The sysctl values are loaded early in boot via initramfs, so finally, rebuild initramfs to 
+override any previous persistent sysctl settings in the initial ramdisk image.
+
+Raw
+# dracut -f -v 
+----
