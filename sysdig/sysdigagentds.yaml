@@ -15,7 +15,9 @@ spec:
       productVersion: 1.7.15
   secure:
         enabled: true    
+  ebpf:
+          enabled: false
   scc:
     create: true
   sysdig:
-    accessKey: <>
+    accessKey: <access key from secure.sysdig.com (Settings / Agent Installation)>
