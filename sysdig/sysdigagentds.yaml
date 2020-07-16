@@ -1,0 +1,21 @@
+apiVersion: sysdig.com/v1
+kind: SysdigAgent
+metadata:
+  name: sysdig-agent
+  labels:
+    app.kubernetes.io/instance: sysdig-agent
+    app.kubernetes.io/managed-by: sysdig-operator
+    app.kubernetes.io/name: sysdig-agent
+  namespace: lacework2
+spec:
+  daemonset:
+    annotations:
+      productID: SysdigSecureDevopsPlatform
+      productName: Sysdig Secure DevOps Platform
+      productVersion: 1.7.15
+  secure:
+        enabled: true    
+  scc:
+    create: true
+  sysdig:
+    accessKey: <>
