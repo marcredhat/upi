@@ -3,6 +3,11 @@ https://access.redhat.com/solutions/4778681
 https://access.redhat.com/solutions/3773891
 ----
 
+----
+In /etc/nfsmount.conf:
+change Defaultvers=4 to Defaultvers=3
+----
+
 
 ----
 Include insecure option in /etc/exports on NFS server like below:
