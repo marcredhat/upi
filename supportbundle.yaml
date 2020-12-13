@@ -16,8 +16,8 @@ spec:
         selector:
           - app=rook-ceph-tools
         namespace: openshift-storage
-        command: ["osd status"]
-        #args: ["osd tree"]
+        command: ["ceph"]
+        args: ["osd status"]
         timeout: 120s
   analyzers:
     - clusterVersion:
