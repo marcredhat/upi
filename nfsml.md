@@ -81,6 +81,17 @@ sudo chown 8536:8536 /nfs
 # Mount path <IP>:/nfs/${WORKSPACE_NAME} can be used (1 directory per workspace)
 ```
 
+
+```bash
+mkdir /nfs/marc2
+sudo chown -R 8536:8536 /nfs
+vim /etc/exports
+echo "/nfs *(rw,sync,no_root_squash,no_all_squash,async,no_subtree_check)" >> /etc/exports
+echo "/nfs/marc2 *(rw,sync,no_root_squash,no_all_squash,async,no_subtree_check)" >> /etc/exports
+exportfs -rav
+systemctl restart nfs-server
+```
+
 NFS client:
 
 ```bash
@@ -114,3 +125,5 @@ Add the entries like this:
 10.17.197.26:/home    /mnt/nfs/home   nfs defaults 0 0
 10.17.197.26:/var/nfsshare    /mnt/nfs/var/nfsshare   nfs defaults 0 0
 ```
+
+
