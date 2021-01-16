@@ -110,6 +110,7 @@ touch /mnt/nfs/var/nfsshare/test_nfs
 vim /etc/fstab
 Add the entries like this:
 
-[...]
+```text
 10.17.197.26:/home    /mnt/nfs/home   nfs defaults 0 0
 10.17.197.26:/var/nfsshare    /mnt/nfs/var/nfsshare   nfs defaults 0 0
+```
