@@ -10,7 +10,7 @@ sudo dnf -y install podman httpd httpd-tools make
 set +e
 if ! cfssl version || ! cfssljson --help; then
   set -e
-  go get -u github.com/cloudflare/cfssl/cmd/...
+  go get github.com/cloudflare/cfssl/cmd/...
   pushd "${GOPATH}"/src/github.com/cloudflare/cfssl
   make
   popd
