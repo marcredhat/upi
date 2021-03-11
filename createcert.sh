@@ -6,6 +6,7 @@ set -euxo pipefail
 #HOSTNAME=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/hostname" -H "Metadata-Flavor: Google")
 HOSTNAME=marcregistry.local
 sudo dnf -y install podman httpd httpd-tools make
+sudo dnf module -y install go-toolset
 
 set +e
 if ! cfssl version || ! cfssljson --help; then
