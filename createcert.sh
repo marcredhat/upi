@@ -5,17 +5,21 @@ set -euxo pipefail
 # if in gcp instance
 #HOSTNAME=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/hostname" -H "Metadata-Flavor: Google")
 HOSTNAME=marcregistry.local
+GOPATH="/root/go/"
 sudo dnf -y install podman httpd httpd-tools make
-sudo dnf module -y install go-toolset
-
+sudo yum module -y install go-toolset
+rpm -qi go-toolset
 set +e
+
+sudo cp -pR /root/go/bin/* /usr/bin
+
 if ! cfssl version || ! cfssljson --help; then
   set -e
-  git clone https://github.com/cloudflare/cfssl.git
-  cd cfssl
+  go get github.com/cloudflare/cfssl/cmd/...
+  ls ~/go/bin/
+  #pushd "${GOPATH}"/src/github.com/cloudflare/cfssl
   make
-
-  popd
+  #popd
   #sudo cp "${GOPATH}"/src/github.com/cloudflare/cfssl/bin/cfssl /usr/local/bin
   #sudo cp "${GOPATH}"/src/github.com/cloudflare/cfssl/bin/cfssljson /usr/local/bin
 fi
