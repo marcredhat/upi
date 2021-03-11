@@ -6,6 +6,9 @@ set -euxo pipefail
 #HOSTNAME=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/hostname" -H "Metadata-Flavor: Google")
 HOSTNAME=marcregistry.local
 GOPATH="/root/go/"
+
+date --set="10 MAR 2021 18:00:00"
+
 sudo dnf -y install podman httpd httpd-tools make
 sudo yum module -y install go-toolset
 rpm -qi go-toolset
@@ -156,6 +159,6 @@ sudo podman run --name test-registry -p 5000:5000 \
 -d docker.io/library/registry:2
 
 popd
-rm -rf create-registry-certs
+#rm -rf create-registry-certs
 sleep 5
 curl -u test:test https://"${HOSTNAME}":5000/v2/_catalog
