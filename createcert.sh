@@ -21,7 +21,7 @@ if ! cfssl version || ! cfssljson --help; then
   go get github.com/cloudflare/cfssl/cmd/...
   ls ~/go/bin/
   #pushd "${GOPATH}"/src/github.com/cloudflare/cfssl
-  make
+  #make
   #popd
   #sudo cp "${GOPATH}"/src/github.com/cloudflare/cfssl/bin/cfssl /usr/local/bin
   #sudo cp "${GOPATH}"/src/github.com/cloudflare/cfssl/bin/cfssljson /usr/local/bin
