@@ -7,7 +7,7 @@ set -euxo pipefail
 HOSTNAME=marcregistry.local
 GOPATH="/root/go/"
 
-date --set="10 MAR 2021 18:00:00"
+#date --set="10 MAR 2021 18:00:00"
 
 sudo dnf -y install podman httpd httpd-tools make
 sudo yum module -y install go-toolset
